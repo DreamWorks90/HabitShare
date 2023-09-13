@@ -1,6 +1,6 @@
 # habitshare
 
-A flutter project for creating Habits and sharing with friends
+A flutter project for creating Habits and sharing with friends. Looking to get some motivation.
 
 ## Getting Started
 
