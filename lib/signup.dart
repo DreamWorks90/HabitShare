@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:HabitShare/signin.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -44,18 +47,14 @@ class _SignUpState extends State<SignUp> {
     return null;
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      print(_usernameController.text);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
+          systemOverlayStyle:
+              const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
           backgroundColor: const Color(0xff1855f4),
           leading: IconButton(
               onPressed: () {
@@ -102,7 +101,7 @@ class _SignUpState extends State<SignUp> {
                   ),
                   validator: _validateUsername,
                 ),
-                const SizedBox(height: 16.0), // Add spacing between text fields
+                const SizedBox(height: 16.0),
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(
@@ -160,7 +159,7 @@ class _SignUpState extends State<SignUp> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  onPressed: _submitForm,
+                  onPressed: _performSignup,
                   child: const Text(
                     'Sign Up',
                     style: TextStyle(
@@ -175,5 +174,48 @@ class _SignUpState extends State<SignUp> {
         ),
       ),
     );
+  }
+
+  void _performSignup() async {
+    if (_formKey.currentState!.validate()) {
+      final name = _usernameController.text;
+      final email = _emailController.text;
+      final password = _passwordController.text;
+
+      // Store signup details in Shared Preferences
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('name', name);
+      prefs.setString('email', email);
+      prefs.setString('password', password);
+      showDialog(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            title: Text('Success'),
+            content: Text('Signup Successful!'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) {
+                      return const SignIn();
+                    },
+                  ));
+                  //Navigator.of(context).pop(); // Close the signup page
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      /*print('Signup Successful');
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) {
+          return const SignIn();
+        },
+      ));*/
+    }
   }
 }

@@ -19,11 +19,13 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Center(
-              child: Text(
-                'Habit Share',
-                style: TextStyle(
-                  fontSize: 50,
-                  fontWeight: FontWeight.w500,
+              child: Card(
+                child: Text(
+                  'Habit Share',
+                  style: TextStyle(
+                    fontSize: 50,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
