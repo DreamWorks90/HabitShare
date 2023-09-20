@@ -1,7 +1,7 @@
 import 'dart:async';
-
+import 'package:HabitShare/Constants.dart';
+import 'package:HabitShare/HomePage/HomePage.dart';
 import 'package:flutter/material.dart';
-import 'homepage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,10 +17,11 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: "Habit Share",
       debugShowCheckedModeBanner: false,
-      home: SplashPage(),
+      theme: ThemeData(primaryColor: AppColors.primaryColor),
+      home: const SplashPage(),
     );
   }
 }
@@ -45,7 +46,7 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: const Color(0xff1855f4),
+        backgroundColor: AppColors.primaryColor,
         body: Center(
             child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

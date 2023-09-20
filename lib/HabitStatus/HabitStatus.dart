@@ -1,7 +1,5 @@
-import 'package:HabitShare/signin.dart';
+import 'package:HabitShare/HomePage/HomePage.dart';
 import 'package:flutter/material.dart';
-
-import 'homepage.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({super.key});

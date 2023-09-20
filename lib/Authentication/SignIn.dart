@@ -1,8 +1,9 @@
-import 'package:HabitShare/firstpage.dart';
-import 'package:HabitShare/reset_password.dart';
+import 'package:HabitShare/Constants.dart';
+import 'package:HabitShare/HabitStatus/HabitStatus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'ResetPassword.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -47,7 +48,7 @@ class _SignInState extends State<SignIn> {
           appBar: AppBar(
             systemOverlayStyle:
                 const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
-            backgroundColor: const Color(0xff1855f4),
+            backgroundColor: AppColors.primaryColor,
             leading: IconButton(
                 onPressed: () {
                   Navigator.pop(context);
@@ -121,7 +122,7 @@ class _SignInState extends State<SignIn> {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       elevation: 5,
-                      backgroundColor: const Color(0xff1855f4),
+                      backgroundColor: AppColors.primaryColor,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 40, vertical: 10),
                       shape: RoundedRectangleBorder(

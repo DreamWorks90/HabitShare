@@ -1,7 +1,8 @@
+import 'package:HabitShare/Constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:HabitShare/signin.dart';
+import 'SignIn.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -55,7 +56,7 @@ class _SignUpState extends State<SignUp> {
         appBar: AppBar(
           systemOverlayStyle:
               const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
-          backgroundColor: const Color(0xff1855f4),
+          backgroundColor: AppColors.primaryColor,
           leading: IconButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -152,7 +153,7 @@ class _SignUpState extends State<SignUp> {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
-                    backgroundColor: const Color(0xff1855f4),
+                    backgroundColor: AppColors.primaryColor,
                     padding: const EdgeInsets.symmetric(
                         horizontal: 40, vertical: 10),
                     shape: RoundedRectangleBorder(

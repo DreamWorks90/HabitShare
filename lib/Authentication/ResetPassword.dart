@@ -1,3 +1,4 @@
+import 'package:HabitShare/Constants.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -100,7 +101,7 @@ class _ResetPasswordState extends State<ResetPassword> {
           style: TextStyle(
               fontSize: 25, fontWeight: FontWeight.w500, color: Colors.white),
         )),
-        backgroundColor: const Color(0xff1855f4),
+        backgroundColor: AppColors.primaryColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -183,7 +184,7 @@ class _ResetPasswordState extends State<ResetPassword> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   elevation: 5,
-                  backgroundColor: const Color(0xff1855f4),
+                  backgroundColor: AppColors.primaryColor,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                   shape: RoundedRectangleBorder(

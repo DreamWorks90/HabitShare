@@ -1,6 +1,7 @@
+import 'package:HabitShare/Authentication/SignIn.dart';
+import 'package:HabitShare/Authentication/SignUp.dart';
+import 'package:HabitShare/Constants.dart';
 import 'package:flutter/material.dart';
-import 'signin.dart';
-import 'signup.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -35,7 +36,7 @@ class _HomePageState extends State<HomePage> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               elevation: 5,
-              backgroundColor: const Color(0xff1855f4),
+              backgroundColor: AppColors.primaryColor,
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -57,7 +58,7 @@ class _HomePageState extends State<HomePage> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               elevation: 5,
-              backgroundColor: const Color(0xff1855f4),
+              backgroundColor: AppColors.primaryColor,
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
