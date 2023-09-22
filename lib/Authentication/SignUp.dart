@@ -55,25 +55,19 @@ class _SignUpState extends State<SignUp> {
       home: Scaffold(
         appBar: AppBar(
           systemOverlayStyle:
-              const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
-          backgroundColor: AppColors.primaryColor,
+              SystemUiOverlayStyle(statusBarColor: Colors.transparent),
+          backgroundColor: primaryColor,
           leading: IconButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              icon: const Icon(Icons.arrow_back)),
-          title: const Center(
-            child: Text(
-              'Signup Screen',
-              style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white),
-            ),
+              icon: arrowBackIcon),
+          title: Center(
+            child: Text('Signup Screen', style: appbarTextStyle),
           ),
         ),
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0),
           child: Form(
             key: _formKey,
             child: Column(
@@ -102,7 +96,7 @@ class _SignUpState extends State<SignUp> {
                   ),
                   validator: _validateUsername,
                 ),
-                const SizedBox(height: 16.0),
+                SizedBox(height: 16.0),
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(
@@ -125,7 +119,7 @@ class _SignUpState extends State<SignUp> {
                   ),
                   validator: _validateEmail,
                 ),
-                const SizedBox(height: 16.0),
+                SizedBox(height: 16.0),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
@@ -149,24 +143,20 @@ class _SignUpState extends State<SignUp> {
                   ),
                   validator: _validatePassword,
                 ),
-                const SizedBox(height: 40.0),
+                SizedBox(height: 40.0),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
-                    backgroundColor: AppColors.primaryColor,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 40, vertical: 10),
+                    backgroundColor: primaryColor,
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
                   onPressed: _performSignup,
-                  child: const Text(
+                  child: Text(
                     'Sign Up',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white),
+                    style: buttonTextStyle,
                   ),
                 ),
               ],
@@ -200,7 +190,7 @@ class _SignUpState extends State<SignUp> {
                   Navigator.of(dialogContext).pop();
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) {
-                      return const SignIn();
+                      return signInWidget;
                     },
                   ));
                   //Navigator.of(context).pop(); // Close the signup page
@@ -211,12 +201,6 @@ class _SignUpState extends State<SignUp> {
           );
         },
       );
-      /*print('Signup Successful');
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) {
-          return const SignIn();
-        },
-      ));*/
     }
   }
 }
