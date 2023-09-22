@@ -98,10 +98,9 @@ class _ResetPasswordState extends State<ResetPassword> {
         title: const Center(
             child: Text(
           'Reset Password',
-          style: TextStyle(
-              fontSize: 25, fontWeight: FontWeight.w500, color: Colors.white),
+          style: appbarTextStyle,
         )),
-        backgroundColor: AppColors.primaryColor,
+        backgroundColor: primaryColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -180,13 +179,12 @@ class _ResetPasswordState extends State<ResetPassword> {
                 ),
                 validator: _validateConfirmPassword,
               ),
-              const SizedBox(height: 40.0),
+              SizedBox(height: 40.0),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   elevation: 5,
-                  backgroundColor: AppColors.primaryColor,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                  backgroundColor: primaryColor,
+                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -196,12 +194,9 @@ class _ResetPasswordState extends State<ResetPassword> {
                     _resetPassword();
                   }
                 },
-                child: const Text(
+                child: Text(
                   'Reset Password',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white),
+                  style: buttonTextStyle,
                 ),
               ),
             ],
