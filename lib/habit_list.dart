@@ -1,9 +1,10 @@
 // lib/widgets/habit_list.dart
-/*
+
 import 'package:add_habit_demo_3/app_state.dart';
 import 'package:add_habit_demo_3/habit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 
 class HabitList extends StatelessWidget {
   const HabitList({super.key});
@@ -11,30 +12,58 @@ class HabitList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, List<Habit>>(
-      converter: (store) => store.state.habits,
-      builder: (context, habits) {
+      converter: (Store<AppState> store) => store.state.habits,
+      builder: (BuildContext context, List<Habit> habits) {
         return ListView.builder(
           itemCount: habits.length,
           itemBuilder: (context, index) {
             final habit = habits[index];
-            return ListTile(
-              title: Text(habit.name),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(habit.description),
-                  Text(
-                      'Frequency: ${habit.frequency.toString().split('.').last}'),
-                  Text('Time: ${habit.time.toString().split('.').last}'),
-                ],
-              ),
-              trailing: IconButton(
-                icon: Icon(Icons.delete),
-                onPressed: () {
-                  StoreProvider.of<AppState>(context).dispatch(
-                    RemoveHabitAction(habit.name),
-                  );
-                },
+            return Card(
+              elevation: 4.0,
+              margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      habit.name,
+                      style: TextStyle(
+                        fontSize: 25.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 8.0),
+                    Text(
+                      habit.description,
+                      style: TextStyle(fontSize: 16.0),
+                    ),
+                    SizedBox(height: 8.0),
+                    Row(
+                      children: [
+                        Icon(Icons.calendar_today),
+                        SizedBox(width: 4.0),
+                        Text(
+                            'Frequency:  ${habit.frequency.toString().split('.').last}'),
+                        SizedBox(width: 16.0),
+                        Icon(Icons.access_time),
+                        SizedBox(width: 4.0),
+                        Text('Time: ${habit.time.toString().split('.').last}'),
+                        SizedBox(
+                          width: 5.0,
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                            StoreProvider.of<AppState>(context).dispatch(
+                              RemoveHabitAction(habit.name),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -43,4 +72,3 @@ class HabitList extends StatelessWidget {
     );
   }
 }
-*/

@@ -1,10 +1,13 @@
 import 'package:add_habit_demo_3/add_habit_form.dart';
 import 'package:add_habit_demo_3/app_state.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
+import 'habit_list.dart';
+
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -31,12 +34,8 @@ class HabitTrackerScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Habit Tracker'),
       ),
-      body: const Column(
-        children: <Widget>[
-          AddHabitForm(),
-          //HabitList(),
-        ],
-      ),
+      body: HabitList(),
+      floatingActionButton: AddHabitForm(),
     );
   }
 }
