@@ -1,5 +1,7 @@
 import 'package:add_habit_demo_3/app_state.dart';
 import 'package:add_habit_demo_3/habit.dart';
+import 'package:add_habit_demo_3/model/user.dart';
+import 'package:add_habit_demo_3/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
@@ -15,20 +17,18 @@ class _AddHabitFormState extends State<AddHabitForm> {
   final TextEditingController descriptionController = TextEditingController();
   HabitFrequency? selectedFrequency;
   HabitTime? selectedTime;
+  var _userService = UserService();
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 30, vertical: 50),
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
       child: Column(
         children: <Widget>[
-          SizedBox(
-            height: 20,
-          ),
           TextFormField(
             keyboardType: TextInputType.text,
             controller: nameController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Habit Name',
               labelStyle: TextStyle(
                   fontSize: 20,
@@ -108,7 +108,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
             height: 20,
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               if (selectedFrequency != null &&
                   selectedTime != null &&
                   nameController.text.isNotEmpty &&
@@ -130,6 +130,13 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   selectedFrequency = null;
                   selectedTime = null;
                 });
+                var _user = User();
+                _user.name = nameController.text;
+                _user.description = descriptionController.text;
+                _user.frequency = (selectedFrequency != null) as String?;
+                _user.time = (selectedTime != null) as String?;
+                var result = await _userService.SaveUser(_user);
+                print(result);
               }
             },
             child: const Text('Add Habit'),
