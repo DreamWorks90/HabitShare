@@ -1,7 +1,9 @@
-import 'package:add_habit_demo_3/app_state.dart';
-import 'package:add_habit_demo_3/habit.dart';
-import 'package:add_habit_demo_3/model/user.dart';
-import 'package:add_habit_demo_3/services/user_service.dart';
+import 'package:add_habit_demo_3/AddHabit/habit.dart';
+import 'package:add_habit_demo_3/HabitList/HabitList.dart';
+import 'package:add_habit_demo_3/Model/DBUser.dart';
+import 'package:add_habit_demo_3/Reducer/AppState.dart';
+import 'package:add_habit_demo_3/Service/UserService.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
@@ -130,6 +132,9 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   selectedFrequency = null;
                   selectedTime = null;
                 });
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const HabitList()));
+
                 var _user = User();
                 _user.name = nameController.text;
                 _user.description = descriptionController.text;
