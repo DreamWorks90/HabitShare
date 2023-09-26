@@ -1,3 +1,4 @@
+import 'package:HabitShare/Constants.dart';
 import 'package:flutter/material.dart';
 
 class AddHabits extends StatefulWidget {
@@ -11,13 +12,10 @@ class _AddHabitsState extends State<AddHabits> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+          backgroundColor: primaryColor,
           title: Center(
-        child: Text(
-          "Add Habits",
-          style: TextStyle(
-              fontSize: 25, fontWeight: FontWeight.w500, color: Colors.white),
-        ),
-      )),
+            child: Text("Add Habits", style: appbarTextStyle),
+          )),
     );
   }
 }

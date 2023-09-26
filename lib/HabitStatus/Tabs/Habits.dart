@@ -35,7 +35,7 @@ class _HabitsTabState extends State<HabitsTab> {
           Navigator.push(context,
               MaterialPageRoute(builder: (context) => addHabitsWidget));
         },
-        backgroundColor: Colors.blue,
+        backgroundColor: primaryColor,
         child: Icon(Icons.add),
       ),
     );
