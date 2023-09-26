@@ -19,6 +19,7 @@ class _HabitListState extends State<HabitList> {
     return StoreConnector<AppState, List<Habit>>(
       converter: (Store<AppState> store) => store.state.habits,
       builder: (BuildContext context, List<Habit> habits) {
+        final completedHabits = store.state.completedHabits;
         return Scaffold(
           appBar: AppBar(
             title: Text('HABIT SHARE'),
@@ -40,8 +41,19 @@ class _HabitListState extends State<HabitList> {
                             setState(() {
                               if (completedHabits.contains(selectedHabit)) {
                                 completedHabits.remove(selectedHabit);
+
+                                // Dispatch the action to remove the habit from completedHabits
+                                StoreProvider.of<AppState>(context).dispatch(
+                                  RemoveCompletedHabitAction(
+                                      selectedHabit!.name),
+                                );
                               } else {
                                 completedHabits.add(selectedHabit!);
+
+                                // Dispatch the action to add the habit to completedHabits
+                                StoreProvider.of<AppState>(context).dispatch(
+                                  AddCompletedHabitAction(selectedHabit),
+                                );
                               }
                             });
                           },
