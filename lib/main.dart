@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
     return StoreProvider(
       store: store,
       child: const MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Habit Tracker App',
         home: HabitTrackerScreen(),
       ),
