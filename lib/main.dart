@@ -1,8 +1,7 @@
-import 'package:add_habit_demo_3/AddHabit/AddHabitForm.dart';
-import 'package:add_habit_demo_3/Reducer/AppState.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:habitshare/AddHabit/AddHabitForm.dart';
+import 'package:habitshare/Reducer/AppState.dart';
 
 void main() {
   runApp(MyApp());

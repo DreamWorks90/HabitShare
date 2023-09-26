@@ -1,4 +1,4 @@
-import 'package:add_habit_demo_3/AddHabit/habit.dart';
+import 'package:habitshare/AddHabit/Habit.dart';
 import 'package:redux/redux.dart';
 
 class AppState {

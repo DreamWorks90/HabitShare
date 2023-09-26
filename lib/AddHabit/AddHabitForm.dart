@@ -1,11 +1,12 @@
-import 'package:add_habit_demo_3/AddHabit/habit.dart';
-import 'package:add_habit_demo_3/HabitList/HabitList.dart';
-import 'package:add_habit_demo_3/Model/DBUser.dart';
-import 'package:add_habit_demo_3/Reducer/AppState.dart';
-import 'package:add_habit_demo_3/Service/UserService.dart';
+
 
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:habitshare/AddHabit/Habit.dart';
+import 'package:habitshare/HabitList/HabitList.dart';
+import 'package:habitshare/Model/DBUser.dart';
+import 'package:habitshare/Reducer/AppState.dart';
+import 'package:habitshare/Service/UserService.dart';
 
 class AddHabitForm extends StatefulWidget {
   const AddHabitForm({super.key});
