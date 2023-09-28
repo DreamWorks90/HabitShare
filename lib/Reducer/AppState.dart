@@ -1,5 +1,6 @@
-import 'package:habitshare/AddHabit/Habit.dart';
 import 'package:redux/redux.dart';
+
+import '../AddHabit/Habit.dart';
 
 class AppState {
   final List<Habit> habits;
@@ -11,26 +12,22 @@ final List<Habit> initialHabits = [];
 
 class AddHabitAction {
   final Habit habit;
-
   AddHabitAction(this.habit);
 }
 
 class RemoveHabitAction {
   final String habitName;
-
   RemoveHabitAction(this.habitName);
 }
 
 class AddCompletedHabitAction {
   final Habit habit;
-
   AddCompletedHabitAction(this.habit);
 }
 
 // Define an action to remove a completed habit
 class RemoveCompletedHabitAction {
   final String habitName;
-
   RemoveCompletedHabitAction(this.habitName);
 }
 
