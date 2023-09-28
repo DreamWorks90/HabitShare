@@ -1,4 +1,4 @@
-import 'package:habitshare/DBHelper/DataBaseConnection.dart';
+import 'package:habitshare_dw/DBHelper/DataBaseConnection.dart';
 import 'package:sqflite/sqflite.dart';
 
 class Repository {
