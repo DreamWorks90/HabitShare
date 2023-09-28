@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:habitshare/AddHabit/AddHabitForm.dart';
-import 'package:habitshare/Reducer/AppState.dart';
+
+import 'package:habitshare_dw/HomePage/SplashPage.dart';
+import 'package:habitshare_dw/Reducer/AppState.dart';
 
 void main() {
   runApp(MyApp());
@@ -32,7 +33,7 @@ class HabitTrackerScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Habit Tracker'),
       ),
-      body: AddHabitForm(),
+      body: SplashPage(),
     );
   }
 }
