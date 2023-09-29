@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:habitshare_dw/Constants/Constants.dart';
 import 'package:habitshare_dw/HabitList/HabitList.dart';
+import 'package:habitshare_dw/HabitStatus/HabitStatus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'SignIn.dart';
 
@@ -58,11 +59,6 @@ class _SignUpState extends State<SignUp> {
           systemOverlayStyle:
               SystemUiOverlayStyle(statusBarColor: Colors.transparent),
           backgroundColor: primaryColor,
-          leading: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: arrowBackIcon),
           title: Center(
             child: Text('Signup', style: appbarTextStyle),
           ),
@@ -190,7 +186,7 @@ class _SignUpState extends State<SignUp> {
                 onPressed: () {
                   Navigator.of(dialogContext).pop();
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => HabitList()));
+                      MaterialPageRoute(builder: (context) => HabitStatus()));
                 },
                 child: Text('OK'),
               ),
