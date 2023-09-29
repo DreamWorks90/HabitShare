@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:habitshare_dw/Authentication/SignUp.dart';
 import 'package:habitshare_dw/Constants/Constants.dart';
 import 'package:habitshare_dw/HabitList/HabitList.dart';
 import 'package:habitshare_dw/Authentication/ResetPassword.dart';
+import 'package:habitshare_dw/HabitStatus/HabitStatus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SignIn extends StatefulWidget {
@@ -49,11 +51,6 @@ class _SignInState extends State<SignIn> {
             systemOverlayStyle:
                 const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
             backgroundColor: primaryColor,
-            leading: IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: arrowBackIcon),
             title: const Center(
               child: Text(
                 'SignIn',
@@ -144,6 +141,13 @@ class _SignInState extends State<SignIn> {
                     },
                     child: Text('Forgot Password?'),
                   ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => SignUp()));
+                    },
+                    child: Text('New User'),
+                  ),
                 ],
               ),
             ),
@@ -158,7 +162,7 @@ class _SignInState extends State<SignIn> {
     final storedPassword = prefs.getString('password');
     if (enteredEmail == storedEmail && enteredPassword == storedPassword) {
       navigatorKey.currentState?.pushReplacement(
-        MaterialPageRoute(builder: (context) => HabitList()),
+        MaterialPageRoute(builder: (context) => HabitStatus()),
       );
     } else {
       showSignInFailedDialog();
