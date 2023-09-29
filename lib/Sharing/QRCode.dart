@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:habitshare_dw/Constants/Constants.dart';
+import 'package:habitshare_dw/Friends/MyQRCode.dart';
 
 class QRCode extends StatefulWidget {
   const QRCode({super.key});
@@ -34,8 +34,10 @@ class _QRCodeState extends State<QRCode> {
                   ),
                 ),
                 onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => QRCode()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => QRCodeGenerator()));
                 },
                 child: Text(
                   "View My QR Code",
@@ -53,8 +55,10 @@ class _QRCodeState extends State<QRCode> {
                   ),
                 ),
                 onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => QRCode()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => QRCodeGenerator()));
                 },
                 child: Text(
                   "Scan QR Code",
@@ -72,8 +76,10 @@ class _QRCodeState extends State<QRCode> {
                   ),
                 ),
                 onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => QRCode()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => QRCodeGenerator()));
                 },
                 child: Text(
                   "My Gallery",
