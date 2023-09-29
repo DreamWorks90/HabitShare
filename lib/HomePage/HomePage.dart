@@ -48,7 +48,7 @@ class _HomePageState extends State<HomePage> {
             },
             child: const Text('Sign Up', style: buttonTextStyle),
           ),
-          SizedBox(width: 50),
+          SizedBox(width: 30),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               elevation: 5,
