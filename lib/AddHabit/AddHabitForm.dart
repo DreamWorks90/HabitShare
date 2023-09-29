@@ -1,10 +1,13 @@
+import 'package:animated_button_bar/animated_button_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:habitshare_dw/AddHabit/Habit.dart';
-import 'package:habitshare_dw/HabitList/HabitList.dart';
-import 'package:habitshare_dw/Model/DBUser.dart';
-import 'package:habitshare_dw/Reducer/AppState.dart';
-import 'package:habitshare_dw/Service/UserService.dart';
+import 'package:habitshare_dw/Constants/Constants.dart';
+import 'package:habitshare_dw/HabitStatus/HabitStatus.dart';
+import '../HabitList/HabitList.dart';
+import '../Model/DBUser.dart';
+import '../Reducer/AppState.dart';
+import '../Service/UserService.dart';
+import 'Habit.dart';
 
 class AddHabitForm extends StatefulWidget {
   //AddHabitForm({Key? key, required this.isBuildHabit}) : super(key: key);
@@ -20,6 +23,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
   HabitFrequency? selectedFrequency;
   HabitTime? selectedTime;
   var _userService = UserService();
+  String? selectedHabitType;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +35,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
             leading: IconButton(
                 onPressed: () {
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => HabitList()));
+                      MaterialPageRoute(builder: (context) => HabitStatus()));
                 },
                 icon: Icon(Icons.arrow_back_outlined)),
           ),
@@ -39,6 +43,48 @@ class _AddHabitFormState extends State<AddHabitForm> {
             padding: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
             child: Column(
               children: <Widget>[
+                AnimatedButtonBar(
+                  radius: 32.0,
+                  padding: const EdgeInsets.all(16.0),
+                  backgroundColor: Colors.white,
+                  foregroundColor: primaryColor,
+                  elevation: 24,
+                  borderColor: Colors.white,
+                  borderWidth: 2,
+                  innerVerticalPadding: 16,
+                  children: [
+                    ButtonBarEntry(
+                      onTap: () {
+                        setState(() {
+                          selectedHabitType = 'Build';
+                        });
+                      },
+                      child: Text(
+                        'BUILD',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                    ),
+                    ButtonBarEntry(
+                      onTap: () {
+                        setState(() {
+                          selectedHabitType = 'Quit';
+                        });
+                      },
+                      child: Text(
+                        'Quilt',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                    ),
+                  ],
+                ),
+                if (selectedHabitType != null)
+                  Text(
+                    'Selected Habit Type: $selectedHabitType',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                SizedBox(
+                  height: 20,
+                ),
                 TextFormField(
                   keyboardType: TextInputType.text,
                   controller: nameController,
@@ -126,14 +172,15 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     if (selectedFrequency != null &&
                         selectedTime != null &&
                         nameController.text.isNotEmpty &&
-                        descriptionController.text.isNotEmpty) {
+                        descriptionController.text.isNotEmpty &&
+                        selectedHabitType != null) {
                       final habit = Habit(
                         name: nameController.text,
                         description: descriptionController.text,
                         frequency: selectedFrequency!,
                         time: selectedTime!,
                       );
-
+                      habit.habitType = selectedHabitType;
                       StoreProvider.of<AppState>(context).dispatch(
                         AddHabitAction(habit),
                       );
@@ -147,7 +194,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const HabitList()));
+                              builder: (context) => const HabitStatus()));
 
                       var _user = User();
                       _user.name = nameController.text;
