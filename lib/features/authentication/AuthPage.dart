@@ -1,20 +1,22 @@
-import 'package:HabitShare/Constants.dart';
 import 'package:flutter/material.dart';
+import 'package:HabitShare/features/authentication/SignIn.dart';
+import 'package:HabitShare/features/authentication/SignUp.dart';
+import 'package:HabitShare/Constants.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class AuthPage extends StatefulWidget {
+  const AuthPage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<AuthPage> createState() => _AuthPageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _AuthPageState extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: Column(
+        body: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Center(
@@ -35,32 +37,32 @@ class _HomePageState extends State<HomePage> {
             style: ElevatedButton.styleFrom(
               elevation: 5,
               backgroundColor: primaryColor,
-              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => signUpWidget));
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => SignUp()));
             },
             child: const Text('Sign Up', style: buttonTextStyle),
           ),
-          SizedBox(width: 50),
+          const SizedBox(width: 30),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               elevation: 5,
               backgroundColor: primaryColor,
-              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => signInWidget));
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => SignIn()));
             },
-            child: Text(
+            child: const Text(
               'Sign In',
               style: buttonTextStyle,
             ),
