@@ -99,6 +99,8 @@ unlinked_spec.ds
 **/ios/Flutter/flutter_export_environment.sh
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/Flutter/Debug.xcconfig
+**/ios/Flutter/Release.xcconfig
 
 # macOS
 **/macos/Flutter/GeneratedPluginRegistrant.swift
