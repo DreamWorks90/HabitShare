@@ -15,7 +15,7 @@ class _SplashPageState extends State<SplashPage> {
     super.initState();
     Timer(Duration(seconds: 4), () {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => homePageWidget));
+          context, MaterialPageRoute(builder: (context) => authPageWidget));
     });
   }
 
@@ -32,7 +32,7 @@ class _SplashPageState extends State<SplashPage> {
               height: 150,
             ),
             SizedBox(height: 20),
-            CircularProgressIndicator(
+            const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           ],

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '../Constants.dart';
+import '../../Constants.dart';
 
-class HabitStatus extends StatefulWidget {
-  const HabitStatus({super.key});
+class HabitShareTabs extends StatefulWidget {
+  const HabitShareTabs({super.key});
 
   @override
-  State<HabitStatus> createState() => _HabitStatusState();
+  State<HabitShareTabs> createState() => _HabitShareTabsState();
 }
 
-class _HabitStatusState extends State<HabitStatus> {
+class _HabitShareTabsState extends State<HabitShareTabs> {
   int _currentIndex = 0;
   final List<Widget> _tabs = [
     habitsTabWidget,
