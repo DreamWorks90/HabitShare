@@ -29,7 +29,7 @@ class _HabitStatusState extends State<HabitStatus> {
       body: _tabs[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        items: [
+        items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.assignment),
             label: "Habits",

@@ -11,7 +11,7 @@ class _AddHabitsState extends State<AddHabits> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Center(
+          title: const Center(
         child: Text(
           "Add Habits",
           style: TextStyle(
