@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
-import '../../Constants.dart';
+import 'package:HabitShare/features/habits/habitlist/HabitList.dart';
+import 'package:HabitShare/features/reports/Reports.dart';
+import 'package:HabitShare/features/settings/Settings.dart';
+import 'package:HabitShare/features/friends/Friends.dart';
 
-class HabitShareTabs extends StatefulWidget {
-  const HabitShareTabs({super.key});
+class HabitStatus extends StatefulWidget {
+  const HabitStatus({super.key});
 
   @override
-  State<HabitShareTabs> createState() => _HabitShareTabsState();
+  State<HabitStatus> createState() => _HabitStatusState();
 }
 
-class _HabitShareTabsState extends State<HabitShareTabs> {
+class _HabitStatusState extends State<HabitStatus> {
   int _currentIndex = 0;
   final List<Widget> _tabs = [
-    habitsTabWidget,
-    friendsTabWidget,
-    reportsTabWidget,
-    settingsTabWidget,
+    const HabitList(),
+    const FriendsTab(),
+    const ReportsTab(),
+    const SettingsTab(),
   ];
 
   void _onItemTapped(int index) {

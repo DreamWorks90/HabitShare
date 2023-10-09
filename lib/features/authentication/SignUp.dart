@@ -1,8 +1,8 @@
-import 'package:HabitShare/Constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:HabitShare/Constants.dart';
+import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'SignIn.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -55,15 +55,10 @@ class _SignUpState extends State<SignUp> {
       home: Scaffold(
         appBar: AppBar(
           systemOverlayStyle:
-              SystemUiOverlayStyle(statusBarColor: Colors.transparent),
+          const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
           backgroundColor: primaryColor,
-          leading: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: arrowBackIcon),
-          title: Center(
-            child: Text('Signup Screen', style: appbarTextStyle),
+          title: const Center(
+            child: Text('Signup', style: appbarTextStyle),
           ),
         ),
         body: Padding(
@@ -96,7 +91,7 @@ class _SignUpState extends State<SignUp> {
                   ),
                   validator: _validateUsername,
                 ),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(
@@ -119,7 +114,7 @@ class _SignUpState extends State<SignUp> {
                   ),
                   validator: _validateEmail,
                 ),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
@@ -143,7 +138,7 @@ class _SignUpState extends State<SignUp> {
                   ),
                   validator: _validatePassword,
                 ),
-                SizedBox(height: 40.0),
+                const SizedBox(height: 40.0),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
@@ -154,7 +149,7 @@ class _SignUpState extends State<SignUp> {
                     ),
                   ),
                   onPressed: _performSignup,
-                  child: Text(
+                  child: const Text(
                     'Sign Up',
                     style: buttonTextStyle,
                   ),
@@ -188,12 +183,8 @@ class _SignUpState extends State<SignUp> {
               TextButton(
                 onPressed: () {
                   Navigator.of(dialogContext).pop();
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) {
-                      return signInWidget;
-                    },
-                  ));
-                  //Navigator.of(context).pop(); // Close the signup page
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => HabitStatus()));
                 },
                 child: Text('OK'),
               ),

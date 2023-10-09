@@ -1,6 +1,9 @@
-import 'package:HabitShare/Constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:HabitShare/features/Authentication/SignUp.dart';
+import 'package:HabitShare/Constants.dart';
+import 'package:HabitShare/features/Authentication/ResetPassword.dart';
+import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SignIn extends StatefulWidget {
@@ -45,22 +48,17 @@ class _SignInState extends State<SignIn> {
         home: Scaffold(
           appBar: AppBar(
             systemOverlayStyle:
-                const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
+            const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
             backgroundColor: primaryColor,
-            leading: IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: arrowBackIcon),
             title: const Center(
               child: Text(
-                'SignIn Screen',
+                'SignIn',
                 style: appbarTextStyle,
               ),
             ),
           ),
           body: Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: Form(
               key: _formKey,
               child: Column(
@@ -89,7 +87,7 @@ class _SignInState extends State<SignIn> {
                     ),
                     validator: _validateEmail,
                   ),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   TextFormField(
                     controller: _passwordController,
                     obscureText: true,
@@ -113,13 +111,13 @@ class _SignInState extends State<SignIn> {
                     ),
                     validator: _validatePassword,
                   ),
-                  SizedBox(height: 40.0),
+                  const SizedBox(height: 40.0),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       elevation: 5,
                       backgroundColor: primaryColor,
                       padding:
-                          EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -130,7 +128,7 @@ class _SignInState extends State<SignIn> {
                             _emailController.text, _passwordController.text);
                       }
                     },
-                    child: Text('Sign In', style: buttonTextStyle),
+                    child: const Text('Sign In', style: buttonTextStyle),
                   ),
                   SizedBox(height: 30.0),
                   TextButton(
@@ -138,9 +136,16 @@ class _SignInState extends State<SignIn> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => resetPasswordWidget));
+                              builder: (context) => ResetPassword()));
                     },
-                    child: Text('Forgot Password?'),
+                    child: const Text('Forgot Password?'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => SignUp()));
+                    },
+                    child: const Text('New User'),
                   ),
                 ],
               ),
@@ -156,7 +161,7 @@ class _SignInState extends State<SignIn> {
     final storedPassword = prefs.getString('password');
     if (enteredEmail == storedEmail && enteredPassword == storedPassword) {
       navigatorKey.currentState?.pushReplacement(
-        MaterialPageRoute(builder: (context) => habitStatusWidget),
+        MaterialPageRoute(builder: (context) => HabitStatus()),
       );
     } else {
       showSignInFailedDialog();
@@ -168,14 +173,14 @@ class _SignInState extends State<SignIn> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Sign-In Failed'),
-          content: Text('Invalid email or password.'),
+          title: const Text('Sign-In Failed'),
+          content: const Text('Invalid email or password.'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
