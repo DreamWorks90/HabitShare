@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:habitshare_dw/Constants/Constants.dart';
-import 'package:habitshare_dw/HomePage/HomePage.dart';
+import 'package:habitshare/Constants/Constants.dart';
+import 'package:habitshare/HomePage/HomePage.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});

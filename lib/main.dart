@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-
-import 'package:habitshare_dw/HomePage/SplashPage.dart';
-import 'package:habitshare_dw/Reducer/AppState.dart';
+import 'package:habitshare/HomePage/SplashPage.dart';
+import 'package:habitshare/Reducer/AppState.dart';
 
 void main() {
   runApp(MyApp());

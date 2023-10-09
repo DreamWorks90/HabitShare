@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:habitshare_dw/Constants/Constants.dart';
+import '../Constants/Constants.dart';
 
 class HabitsTab extends StatefulWidget {
   const HabitsTab({super.key});
@@ -27,9 +27,7 @@ class _HabitsTabState extends State<HabitsTab> {
         child: Text('Habits Tab Content'),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-
-        },
+        onPressed: () {},
         backgroundColor: Colors.blue,
         child: Icon(Icons.add),
       ),

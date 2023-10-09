@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:habitshare_dw/Authentication/SignUp.dart';
-import 'package:habitshare_dw/Constants/Constants.dart';
-import 'package:habitshare_dw/HabitList/HabitList.dart';
-import 'package:habitshare_dw/Authentication/ResetPassword.dart';
-import 'package:habitshare_dw/HabitStatus/HabitStatus.dart';
+import 'package:habitshare/Authentication/SignUp.dart';
+import 'package:habitshare/HabitStatus/HabitStatus.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../Constants/Constants.dart';
+import 'ResetPassword.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});

@@ -1,7 +1,5 @@
-
-
-import 'package:habitshare_dw/DBHelper/Repository.dart';
-import 'package:habitshare_dw/Model/DBUser.dart';
+import 'package:habitshare/DBHelper/Repository.dart';
+import 'package:habitshare/Model/DBUser.dart';
 
 class UserService {
   late Repository _repository;

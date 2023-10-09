@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:habitshare_dw/Constants/Constants.dart';
+import 'package:habitshare/Constants/Constants.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class QRCodeGenerator extends StatefulWidget {

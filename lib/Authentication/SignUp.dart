@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:habitshare_dw/Constants/Constants.dart';
-import 'package:habitshare_dw/HabitList/HabitList.dart';
-import 'package:habitshare_dw/HabitStatus/HabitStatus.dart';
+import 'package:habitshare/HabitStatus/HabitStatus.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
+import '../Constants/Constants.dart';
 import 'SignIn.dart';
 
 class SignUp extends StatefulWidget {

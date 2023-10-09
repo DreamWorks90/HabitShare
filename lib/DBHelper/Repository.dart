@@ -1,5 +1,6 @@
-import 'package:habitshare_dw/DBHelper/DataBaseConnection.dart';
 import 'package:sqflite/sqflite.dart';
+
+import 'DataBaseConnection.dart';
 
 class Repository {
   late DatabaseConnection _databaseConnection;

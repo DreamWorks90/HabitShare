@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:habitshare_dw/HabitStatus/HabitStatus.dart';
+import 'package:flutter_timeline_calendar/timeline/flutter_timeline_calendar.dart';
+import 'package:habitshare/Constants/Constants.dart';
+import 'package:intl/intl.dart';
 
 import 'package:redux/redux.dart';
 
@@ -24,6 +26,7 @@ class _HabitListState extends State<HabitList> {
       converter: (Store<AppState> store) => store.state.habits,
       builder: (BuildContext context, List<Habit> habits) {
         final completedHabits = store.state.completedHabits;
+
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(
@@ -36,11 +39,40 @@ class _HabitListState extends State<HabitList> {
           ),
           body: Column(
             children: [
+              TimelineCalendar(
+                calendarType: CalendarType.GREGORIAN,
+                calendarLanguage: "en",
+                calendarOptions: CalendarOptions(
+                  viewType: ViewType.DAILY,
+                  toggleViewType: true,
+                  headerMonthElevation: 10,
+                  headerMonthShadowColor: Colors.black26,
+                  headerMonthBackColor: Colors.transparent,
+                ),
+                dayOptions: DayOptions(
+                    compactMode: true, weekDaySelectedColor: primaryColor),
+                headerOptions: HeaderOptions(
+                    weekDayStringType: WeekDayStringTypes.SHORT,
+                    monthStringType: MonthStringTypes.FULL,
+                    backgroundColor: primaryColor,
+                    headerTextColor: Colors.black),
+                onChangeDateTime: (datetime) {
+                  print(datetime.getDate());
+                },
+              ),
               Expanded(
                 child: ListView.builder(
+                  shrinkWrap: true,
                   itemCount: habits.length,
                   itemBuilder: (context, index) {
                     final habit = habits[index];
+
+                    // Check if the habit falls within the selected date range
+                    if (habit.startDate.isAfter(store.state.startDate!) ||
+                        habit.endDate.isBefore(store.state.endDate!)) {
+                      // Habit is outside the selected date range, don't display it
+                      return Container();
+                    }
                     return Row(
                       children: [
                         Radio(
@@ -54,15 +86,14 @@ class _HabitListState extends State<HabitList> {
 
                                 // Dispatch the action to remove the habit from completedHabits
                                 StoreProvider.of<AppState>(context).dispatch(
-                                  RemoveCompletedHabitAction(
-                                      selectedHabit!.name),
+                                  RemoveCompletedHabitAction(habit.name),
                                 );
                               } else {
                                 completedHabits.add(selectedHabit!);
 
                                 // Dispatch the action to add the habit to completedHabits
                                 StoreProvider.of<AppState>(context).dispatch(
-                                  AddCompletedHabitAction(selectedHabit),
+                                  AddCompletedHabitAction(habit),
                                 );
                               }
                             });
@@ -106,6 +137,22 @@ class _HabitListState extends State<HabitList> {
                                     Text(
                                       'Description: ${habit.description}',
                                       style: TextStyle(fontSize: 16.0),
+                                    ),
+                                    SizedBox(height: 8.0),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'Start Date: ${DateFormat.yMd().format(habit.startDate)}', // Format the start date
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                        SizedBox(
+                                          width: 8.0,
+                                        ),
+                                        Text(
+                                          'End Date: ${DateFormat.yMd().format(habit.endDate)}', // Format the end date
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                      ],
                                     ),
                                     SizedBox(height: 8.0),
                                     Row(

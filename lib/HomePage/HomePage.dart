@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:habitshare_dw/Authentication/SignIn.dart';
-import 'package:habitshare_dw/Authentication/SignUp.dart';
-import 'package:habitshare_dw/Constants/Constants.dart';
+import 'package:habitshare/Authentication/SignIn.dart';
+import 'package:habitshare/Authentication/SignUp.dart';
+
+import '../Constants/Constants.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

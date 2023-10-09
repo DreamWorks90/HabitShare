@@ -1,9 +1,8 @@
 import 'package:animated_button_bar/animated_button_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:habitshare_dw/Constants/Constants.dart';
-import 'package:habitshare_dw/HabitStatus/HabitStatus.dart';
-import '../HabitList/HabitList.dart';
+import '../Constants/Constants.dart';
+import '../HabitStatus/HabitStatus.dart';
 import '../Model/DBUser.dart';
 import '../Reducer/AppState.dart';
 import '../Service/UserService.dart';
@@ -24,6 +23,8 @@ class _AddHabitFormState extends State<AddHabitForm> {
   HabitTime? selectedTime;
   var _userService = UserService();
   String? selectedHabitType;
+  DateTime? startDate;
+  DateTime? endDate;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +44,49 @@ class _AddHabitFormState extends State<AddHabitForm> {
             padding: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
             child: Column(
               children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          DateTime? pickedStartDate = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime(2101),
+                          );
+                          if (pickedStartDate != null &&
+                              pickedStartDate != startDate) {
+                            setState(() {
+                              startDate = pickedStartDate;
+                            });
+                          }
+                        },
+                        child: Text('Pick Start Date'),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          DateTime? pickedEndDate = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime(2101),
+                          );
+                          if (pickedEndDate != null &&
+                              pickedEndDate != endDate) {
+                            setState(() {
+                              endDate = pickedEndDate;
+                            });
+                          }
+                        },
+                        child: Text('Pick End Date'),
+                      ),
+                    ),
+                  ],
+                ),
                 AnimatedButtonBar(
                   radius: 32.0,
                   padding: const EdgeInsets.all(16.0),
@@ -173,17 +217,25 @@ class _AddHabitFormState extends State<AddHabitForm> {
                         selectedTime != null &&
                         nameController.text.isNotEmpty &&
                         descriptionController.text.isNotEmpty &&
-                        selectedHabitType != null) {
+                        selectedHabitType != null &&
+                        startDate != null &&
+                        endDate != null) {
                       final habit = Habit(
                         name: nameController.text,
                         description: descriptionController.text,
                         frequency: selectedFrequency!,
                         time: selectedTime!,
+                        startDate: startDate!,
+                        endDate: endDate!,
                       );
                       habit.habitType = selectedHabitType;
                       StoreProvider.of<AppState>(context).dispatch(
                         AddHabitAction(habit),
                       );
+                      StoreProvider.of<AppState>(context)
+                          .dispatch(SetStartDateAction(startDate!));
+                      StoreProvider.of<AppState>(context)
+                          .dispatch(SetEndDateAction(endDate!));
 
                       nameController.clear();
                       descriptionController.clear();

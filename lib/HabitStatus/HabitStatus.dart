@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:habitshare_dw/HabitList/HabitList.dart';
+import 'package:habitshare/HabitList/HabitList.dart';
+import 'package:habitshare/HabitStatus/Reports.dart';
+import 'package:habitshare/Settings/Settings.dart';
+import 'package:habitshare/Sharing/AddFriends.dart';
+import 'package:habitshare/Sharing/Friends.dart';
 
-import 'package:habitshare_dw/HomePage/Habits.dart';
-import 'package:habitshare_dw/HabitStatus/Reports.dart';
-import 'package:habitshare_dw/Settings/Settings.dart';
-import 'package:habitshare_dw/Sharing/Friends.dart';
 import '../Constants/Constants.dart';
 
 class HabitStatus extends StatefulWidget {
@@ -22,6 +22,7 @@ class _HabitStatusState extends State<HabitStatus> {
     ReportsTab(),
     SettingsTab(),
   ];
+// HabitStatus.dart
 
   void _onItemTapped(int index) {
     setState(() {

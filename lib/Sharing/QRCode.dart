@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:habitshare_dw/Constants/Constants.dart';
-import 'package:habitshare_dw/Friends/MyQRCode.dart';
+import 'package:habitshare/Constants/Constants.dart';
+import 'package:habitshare/Friends/MyQRCode.dart';
 
 class QRCode extends StatefulWidget {
   const QRCode({super.key});
