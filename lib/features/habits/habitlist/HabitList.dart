@@ -1,3 +1,4 @@
+import 'package:HabitShare/Constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:HabitShare/redux/AppState.dart';
@@ -23,14 +24,14 @@ class _HabitListState extends State<HabitList> {
         final completedHabits = store.state.completedHabits;
         return Scaffold(
           appBar: AppBar(
-            leading: IconButton(
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => AddHabitForm()));
-                },
-                icon: Icon(Icons.arrow_back)),
-            title: Text('HABIT SHARE'),
-          ),
+              automaticallyImplyLeading: false,
+              backgroundColor: primaryColor,
+              title: const Center(
+                child: Text(
+                  "Habit List",
+                  style: appbarTextStyle,
+                ),
+              )),
           body: Column(
             children: [
               Expanded(
@@ -43,7 +44,7 @@ class _HabitListState extends State<HabitList> {
                         Radio(
                           value: habit,
                           groupValue:
-                          completedHabits.contains(habit) ? habit : null,
+                              completedHabits.contains(habit) ? habit : null,
                           onChanged: (selectedHabit) {
                             setState(() {
                               if (completedHabits.contains(selectedHabit)) {
@@ -205,9 +206,9 @@ class _HabitListState extends State<HabitList> {
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => AddHabitForm()));
+              Navigator.of(context).push(_createRoute());
             },
+            backgroundColor: primaryColor,
             child: const Icon(
               Icons.add,
               size: 25,
@@ -226,6 +227,26 @@ class _HabitListState extends State<HabitList> {
     }
     return Colors.blue; // Default color
   }
+}
+
+PageRouteBuilder _createRoute() {
+  const duration = Duration(seconds: 1);
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => AddHabitForm(),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(0.0, 1.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve))
+        ..animate(animation);
+      return SlideTransition(
+        position: animation.drive(tween),
+        child: child,
+      );
+    },
+    transitionDuration: duration,
+    reverseTransitionDuration: duration, // Set the animation duration here
+  );
 }
 
 void _showDeleteConfirmationDialog(BuildContext context, Habit habit) {
