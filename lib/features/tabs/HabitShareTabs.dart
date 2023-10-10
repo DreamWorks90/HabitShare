@@ -3,6 +3,7 @@ import 'package:HabitShare/features/habits/habitlist/HabitList.dart';
 import 'package:HabitShare/features/reports/Reports.dart';
 import 'package:HabitShare/features/settings/Settings.dart';
 import 'package:HabitShare/features/friends/Friends.dart';
+import 'package:HabitShare/Constants.dart';
 
 class HabitStatus extends StatefulWidget {
   const HabitStatus({super.key});
@@ -31,7 +32,9 @@ class _HabitStatusState extends State<HabitStatus> {
     return Scaffold(
       body: _tabs[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: primaryColor,
         type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.white,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.assignment),

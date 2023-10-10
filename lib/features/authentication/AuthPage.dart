@@ -48,7 +48,7 @@ class _AuthPageState extends State<AuthPage> {
             },
             child: const Text('Sign Up', style: buttonTextStyle),
           ),
-          const SizedBox(width: 30),
+          const SizedBox(width: 85),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               elevation: 5,
