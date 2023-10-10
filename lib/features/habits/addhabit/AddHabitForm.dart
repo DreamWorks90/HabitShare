@@ -27,26 +27,30 @@ class _AddHabitFormState extends State<AddHabitForm> {
         debugShowCheckedModeBanner: false,
         home: Scaffold(
           appBar: AppBar(
+            backgroundColor: primaryColor,
             title: const Text('Build Habit'),
             leading: IconButton(
                 onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => const HabitStatus()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const HabitStatus()));
                 },
                 icon: const Icon(Icons.arrow_back_outlined)),
           ),
           body: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 AnimatedButtonBar(
                   radius: 32.0,
                   padding: const EdgeInsets.all(16.0),
-                  backgroundColor: Colors.white,
+                  backgroundColor: Colors.grey,
                   foregroundColor: primaryColor,
                   elevation: 24,
                   borderColor: Colors.white,
-                  borderWidth: 2,
+                  borderWidth: 0.25,
                   innerVerticalPadding: 16,
                   children: [
                     ButtonBarEntry(
@@ -57,7 +61,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                       },
                       child: const Text(
                         'BUILD',
-                        style: TextStyle(fontSize: 20),
+                        style: TextStyle(fontSize: 20, color: Colors.white),
                       ),
                     ),
                     ButtonBarEntry(
@@ -68,19 +72,15 @@ class _AddHabitFormState extends State<AddHabitForm> {
                       },
                       child: const Text(
                         'Quilt',
-                        style: TextStyle(fontSize: 20),
+                        style: TextStyle(fontSize: 20, color: Colors.white),
                       ),
                     ),
                   ],
                 ),
                 if (selectedHabitType != null)
-                  Text(
-                    'Selected Habit Type: $selectedHabitType',
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  const SizedBox(
+                    height: 20,
                   ),
-                const SizedBox(
-                  height: 20,
-                ),
                 TextFormField(
                   keyboardType: TextInputType.text,
                   controller: nameController,
@@ -88,7 +88,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     labelText: 'Habit Name',
                     labelStyle: TextStyle(
                         fontSize: 20,
-                        color: Color(0xff1855f4),
+                        color: primaryColor,
                         fontWeight: FontWeight.bold),
                     hintText: 'ex: Walking',
                     border: OutlineInputBorder(),
@@ -104,7 +104,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     labelText: 'Habit Description',
                     labelStyle: TextStyle(
                         fontSize: 20,
-                        color: Color(0xff1855f4),
+                        color: primaryColor,
                         fontWeight: FontWeight.bold),
                     hintText: ' need',
                     border: OutlineInputBorder(),
@@ -130,7 +130,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     labelText: 'Frequency',
                     labelStyle: TextStyle(
                         fontSize: 20,
-                        color: Color(0xff1855f4),
+                        color: primaryColor,
                         fontWeight: FontWeight.bold),
                     border: OutlineInputBorder(),
                   ),
@@ -155,7 +155,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     labelText: 'Time',
                     labelStyle: TextStyle(
                         fontSize: 20,
-                        color: Color(0xff1855f4),
+                        color: primaryColor,
                         fontWeight: FontWeight.bold),
                     border: OutlineInputBorder(),
                   ),
@@ -163,7 +163,19 @@ class _AddHabitFormState extends State<AddHabitForm> {
                 const SizedBox(
                   height: 20,
                 ),
+                const SizedBox(
+                  height: 20,
+                ),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    elevation: 5,
+                    backgroundColor: primaryColor,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
                   onPressed: () async {
                     if (selectedFrequency != null &&
                         selectedTime != null &&
@@ -171,12 +183,12 @@ class _AddHabitFormState extends State<AddHabitForm> {
                         descriptionController.text.isNotEmpty &&
                         selectedHabitType != null) {
                       final habit = Habit(
-                        name: nameController.text,
-                        description: descriptionController.text,
-                        frequency: selectedFrequency!,
-                        time: selectedTime!,
-                      );
+                          name: nameController.text,
+                          description: descriptionController.text,
+                          frequency: selectedFrequency!,
+                          time: selectedTime!);
                       habit.habitType = selectedHabitType;
+
                       StoreProvider.of<AppState>(context).dispatch(
                         AddHabitAction(habit),
                       );
@@ -188,16 +200,45 @@ class _AddHabitFormState extends State<AddHabitForm> {
                         selectedTime = null;
                       });
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const HabitStatus()));
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HabitStatus(),
+                        ),
+                      );
+                    } else {
+                      _showNoHabitTypeAlert(context);
                     }
                   },
-                  child: const Text('Add Habit'),
+                  child: const Text(
+                    'Add Habit',
+                    style: TextStyle(fontSize: 20),
+                  ),
                 ),
               ],
             ),
           ),
         ));
   }
+}
+
+void _showNoHabitTypeAlert(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Error'),
+        content: const Text(
+          'Please select a habit type (BUILD or QUIT) before adding the habit.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
 }
