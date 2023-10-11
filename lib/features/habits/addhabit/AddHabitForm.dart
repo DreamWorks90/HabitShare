@@ -5,6 +5,7 @@ import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:HabitShare/redux/AppState.dart';
 import '../models/Habit.dart';
+import 'package:intl/intl.dart';
 
 class AddHabitForm extends StatefulWidget {
   //AddHabitForm({Key? key, required this.isBuildHabit}) : super(key: key);
@@ -20,15 +21,39 @@ class _AddHabitFormState extends State<AddHabitForm> {
   HabitFrequency? selectedFrequency;
   HabitTime? selectedTime;
   String? selectedHabitType;
+  DateTime? selectedDate;
+  String? formattedDate;
+
+  Future<void> _selectDate(BuildContext context) async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2021),
+      lastDate: DateTime(2030),
+    );
+
+    if (pickedDate != null) {
+      setState(() {
+        selectedDate = pickedDate;
+        formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate!);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    String? formattedDate = selectedDate != null
+        ? DateFormat('yyyy-MM-dd').format(selectedDate!)
+        : '';
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
           appBar: AppBar(
             backgroundColor: primaryColor,
-            title: const Text('Build Habit'),
+            title: const Text(
+              'Add Habit',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+            ),
             leading: IconButton(
                 onPressed: () {
                   Navigator.push(
@@ -50,7 +75,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   foregroundColor: primaryColor,
                   elevation: 24,
                   borderColor: Colors.white,
-                  borderWidth: 0.25,
+                  borderWidth: 0.15,
                   innerVerticalPadding: 16,
                   children: [
                     ButtonBarEntry(
@@ -163,6 +188,23 @@ class _AddHabitFormState extends State<AddHabitForm> {
                 const SizedBox(
                   height: 20,
                 ),
+                TextFormField(
+                  controller: TextEditingController(text: formattedDate),
+                  decoration: InputDecoration(
+                    labelText: 'Term',
+                    labelStyle: const TextStyle(
+                        fontSize: 20,
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold),
+                    border: OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        _selectDate(context);
+                      },
+                      icon: const Icon(Icons.calendar_today),
+                    ),
+                  ),
+                ),
                 const SizedBox(
                   height: 20,
                 ),
@@ -171,7 +213,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     elevation: 5,
                     backgroundColor: primaryColor,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 40, vertical: 20),
+                        horizontal: 40, vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -183,12 +225,14 @@ class _AddHabitFormState extends State<AddHabitForm> {
                         descriptionController.text.isNotEmpty &&
                         selectedHabitType != null) {
                       final habit = Habit(
-                          name: nameController.text,
-                          description: descriptionController.text,
-                          frequency: selectedFrequency!,
-                          time: selectedTime!);
+                        name: nameController.text,
+                        description: descriptionController.text,
+                        frequency: selectedFrequency!,
+                        time: selectedTime!,
+                        date: formattedDate,
+                      );
                       habit.habitType = selectedHabitType;
-
+                      print('Selected Date: $formattedDate');
                       StoreProvider.of<AppState>(context).dispatch(
                         AddHabitAction(habit),
                       );
@@ -198,20 +242,17 @@ class _AddHabitFormState extends State<AddHabitForm> {
                       setState(() {
                         selectedFrequency = null;
                         selectedTime = null;
+                        formattedDate = null;
                       });
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HabitStatus(),
-                        ),
-                      );
-                    } else {
-                      _showNoHabitTypeAlert(context);
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const HabitStatus()));
                     }
                   },
                   child: const Text(
                     'Add Habit',
-                    style: TextStyle(fontSize: 20),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -219,26 +260,4 @@ class _AddHabitFormState extends State<AddHabitForm> {
           ),
         ));
   }
-}
-
-void _showNoHabitTypeAlert(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Error'),
-        content: const Text(
-          'Please select a habit type (BUILD or QUIT) before adding the habit.',
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      );
-    },
-  );
 }
