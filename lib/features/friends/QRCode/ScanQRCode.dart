@@ -23,7 +23,7 @@ class _QRScannerState extends State<QRScanner> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: primaryColor,
-        title: Center(
+        title: const Center(
           child: Text(
             'QR Code Scanner',
             style: appbarTextStyle,
@@ -45,9 +45,9 @@ class _QRScannerState extends State<QRScanner> {
               child: (result != null)
                   ? Text(
                       'QR Code Result: ${result!.code}',
-                      style: TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20),
                     )
-                  : Text('Scan a QR code'),
+                  : const Text('Scan a QR code'),
             ),
           ),
         ],

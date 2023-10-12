@@ -32,7 +32,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: primaryColor,
-        title: Center(
+        title: const Center(
           child: Text("My QRCode", style: appbarTextStyle),
         ),
       ),
@@ -63,7 +63,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                 ),
               ),
             ),
-            SizedBox(height: 100.0),
+            const SizedBox(height: 100.0),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 elevation: 5,
@@ -81,7 +81,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                     MaterialPageRoute(
                         builder: (context) => LinkShare()));*/
               },
-              child: Text(
+              child: const Text(
                 "Finish",
                 style: buttonTextStyle,
               ),

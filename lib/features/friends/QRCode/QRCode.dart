@@ -1,6 +1,6 @@
 import 'package:HabitShare/Constants.dart';
-import 'package:HabitShare/HabitStatus/Tabs/Friends/AddFriends/MyQRCode.dart';
-import 'package:HabitShare/HabitStatus/Tabs/Friends/AddFriends/ScanQRCode.dart';
+import 'package:HabitShare/features/friends/QRCode/MyQRCode.dart';
+import 'package:HabitShare/features/friends/QRCode/ScanQRCode.dart';
 import 'package:flutter/material.dart';
 
 class QRCode extends StatefulWidget {
@@ -15,7 +15,7 @@ class _QRCodeState extends State<QRCode> {
     return Scaffold(
       appBar: AppBar(
           backgroundColor: primaryColor,
-          title: Center(
+          title: const Center(
             child: Text("QRCode", style: appbarTextStyle),
           )),
       body: Padding(
@@ -29,7 +29,7 @@ class _QRCodeState extends State<QRCode> {
                 style: ElevatedButton.styleFrom(
                   elevation: 5,
                   backgroundColor: primaryColor,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -38,19 +38,19 @@ class _QRCodeState extends State<QRCode> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => QRCodeGenerator()));
+                          builder: (context) => const QRCodeGenerator()));
                 },
-                child: Text(
+                child: const Text(
                   "View My QR Code",
                   style: buttonTextStyle,
                 ),
               ),
-              SizedBox(height: 30.0), // Add some spacing between buttons
+              const SizedBox(height: 30.0), // Add some spacing between buttons
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   elevation: 5,
                   backgroundColor: primaryColor,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -59,17 +59,17 @@ class _QRCodeState extends State<QRCode> {
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => QRScanner()));
                 },
-                child: Text(
+                child: const Text(
                   "Scan QR Code",
                   style: buttonTextStyle,
                 ),
               ),
-              SizedBox(height: 30.0), // Add some spacing between buttons
+              const SizedBox(height: 30.0), // Add some spacing between buttons
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   elevation: 5,
                   backgroundColor: primaryColor,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -78,9 +78,9 @@ class _QRCodeState extends State<QRCode> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => QRCodeGenerator()));
+                          builder: (context) => const QRCodeGenerator()));
                 },
-                child: Text(
+                child: const Text(
                   "My Gallery",
                   style: buttonTextStyle,
                 ),
