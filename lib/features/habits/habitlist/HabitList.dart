@@ -1,3 +1,4 @@
+import 'package:HabitShare/Constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:HabitShare/redux/AppState.dart';
@@ -23,14 +24,14 @@ class _HabitListState extends State<HabitList> {
         final completedHabits = store.state.completedHabits;
         return Scaffold(
           appBar: AppBar(
-            leading: IconButton(
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => AddHabitForm()));
-                },
-                icon: Icon(Icons.arrow_back)),
-            title: Text('HABIT SHARE'),
-          ),
+              automaticallyImplyLeading: false,
+              backgroundColor: primaryColor,
+              title: const Center(
+                child: Text(
+                  "Habit List",
+                  style: appbarTextStyle,
+                ),
+              )),
           body: Column(
             children: [
               Expanded(
@@ -68,7 +69,7 @@ class _HabitListState extends State<HabitList> {
                         Card(
                           color: getCardColor(habit.habitType),
                           elevation: 4.0,
-                          margin: EdgeInsets.symmetric(
+                          margin: const EdgeInsets.symmetric(
                               horizontal: 10.0, vertical: 8.0),
                           child: Padding(
                             padding: EdgeInsets.all(5.0),
@@ -99,7 +100,7 @@ class _HabitListState extends State<HabitList> {
                                         ),
                                       ],
                                     ),
-                                    SizedBox(height: 8.0),
+                                    const SizedBox(height: 8.0),
                                     Text(
                                       'Description: ${habit.description}',
                                       style: TextStyle(fontSize: 16.0),
@@ -107,13 +108,13 @@ class _HabitListState extends State<HabitList> {
                                     SizedBox(height: 8.0),
                                     Row(
                                       children: [
-                                        Icon(Icons.calendar_today),
-                                        SizedBox(width: 4.0),
+                                        const Icon(Icons.calendar_today),
+                                        const SizedBox(width: 4.0),
                                         Text(
                                             'Frequency:  ${habit.frequency.toString().split('.').last}'),
-                                        SizedBox(width: 10.0),
-                                        Icon(Icons.access_time),
-                                        SizedBox(width: 4.0),
+                                        const SizedBox(width: 10.0),
+                                        const Icon(Icons.access_time),
+                                        const SizedBox(width: 4.0),
                                         Text(
                                             'Time: ${habit.time.toString().split('.').last}'),
                                         const SizedBox(
@@ -140,7 +141,7 @@ class _HabitListState extends State<HabitList> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 color: Colors.grey[200],
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,7 +154,7 @@ class _HabitListState extends State<HabitList> {
                         color: Color(0xff1855f4),
                       ),
                     ),
-                    SizedBox(height: 8.0),
+                    const SizedBox(height: 8.0),
                     ListView.builder(
                       shrinkWrap: true,
                       itemCount: completedHabits.length,
@@ -163,11 +164,11 @@ class _HabitListState extends State<HabitList> {
                           color: getCardColor(completedHabit.habitType),
                           borderOnForeground: true,
                           elevation: 4.0,
-                          shadowColor: Color(0xff1855f4),
+                          shadowColor: const Color(0xff1855f4),
                           margin: const EdgeInsets.symmetric(
                               horizontal: 17.0, vertical: 10.0),
                           child: Padding(
-                            padding: EdgeInsets.all(2.0),
+                            padding: const EdgeInsets.all(2.0),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,14 +183,14 @@ class _HabitListState extends State<HabitList> {
                                           color: Colors.red,
                                           fontWeight: FontWeight.bold),
                                     ),
-                                    SizedBox(height: 10.0),
+                                    const SizedBox(height: 10.0),
                                     Text(
                                       completedHabit.description,
                                       style: const TextStyle(
                                         fontSize: 15,
                                       ),
                                     ),
-                                    SizedBox(height: 8.0),
+                                    const SizedBox(height: 8.0),
                                   ],
                                 ),
                               ],
@@ -205,9 +206,9 @@ class _HabitListState extends State<HabitList> {
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => AddHabitForm()));
+              Navigator.of(context).push(_createRoute());
             },
+            backgroundColor: primaryColor,
             child: const Icon(
               Icons.add,
               size: 25,
@@ -226,6 +227,26 @@ class _HabitListState extends State<HabitList> {
     }
     return Colors.blue; // Default color
   }
+}
+
+PageRouteBuilder _createRoute() {
+  const duration = Duration(seconds: 1);
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => AddHabitForm(),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(0.0, 1.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve))
+        ..animate(animation);
+      return SlideTransition(
+        position: animation.drive(tween),
+        child: child,
+      );
+    },
+    transitionDuration: duration,
+    reverseTransitionDuration: duration, // Set the animation duration here
+  );
 }
 
 void _showDeleteConfirmationDialog(BuildContext context, Habit habit) {
