@@ -5,6 +5,8 @@ class AppState {
   final List<Habit> habits;
   final List<Habit> completedHabits;
   AppState({required this.habits, required this.completedHabits});
+
+  get startDate => null;
 }
 
 final List<Habit> initialHabits = [];
