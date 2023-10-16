@@ -5,6 +5,7 @@ import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:HabitShare/redux/AppState.dart';
 import '../models/Habit.dart';
+import 'package:intl/intl.dart';
 
 class AddHabitForm extends StatefulWidget {
   //AddHabitForm({Key? key, required this.isBuildHabit}) : super(key: key);
@@ -20,33 +21,61 @@ class _AddHabitFormState extends State<AddHabitForm> {
   HabitFrequency? selectedFrequency;
   HabitTime? selectedTime;
   String? selectedHabitType;
+  DateTime? selectedDate;
+  String? formattedDate;
+
+  Future<void> _selectDate(BuildContext context) async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2021),
+      lastDate: DateTime(2030),
+    );
+
+    if (pickedDate != null) {
+      setState(() {
+        selectedDate = pickedDate;
+        formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate!);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    String? formattedDate = selectedDate != null
+        ? DateFormat('yyyy-MM-dd').format(selectedDate!)
+        : '';
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
           appBar: AppBar(
-            title: const Text('Build Habit'),
+            backgroundColor: primaryColor,
+            title: const Text(
+              'Add Habit',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+            ),
             leading: IconButton(
                 onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => const HabitStatus()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const HabitStatus()));
                 },
                 icon: const Icon(Icons.arrow_back_outlined)),
           ),
           body: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 AnimatedButtonBar(
                   radius: 32.0,
                   padding: const EdgeInsets.all(16.0),
-                  backgroundColor: Colors.white,
+                  backgroundColor: Colors.grey,
                   foregroundColor: primaryColor,
                   elevation: 24,
                   borderColor: Colors.white,
-                  borderWidth: 2,
+                  borderWidth: 0.15,
                   innerVerticalPadding: 16,
                   children: [
                     ButtonBarEntry(
@@ -57,7 +86,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                       },
                       child: const Text(
                         'BUILD',
-                        style: TextStyle(fontSize: 20),
+                        style: TextStyle(fontSize: 20, color: Colors.white),
                       ),
                     ),
                     ButtonBarEntry(
@@ -68,19 +97,15 @@ class _AddHabitFormState extends State<AddHabitForm> {
                       },
                       child: const Text(
                         'Quilt',
-                        style: TextStyle(fontSize: 20),
+                        style: TextStyle(fontSize: 20, color: Colors.white),
                       ),
                     ),
                   ],
                 ),
                 if (selectedHabitType != null)
-                  Text(
-                    'Selected Habit Type: $selectedHabitType',
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  const SizedBox(
+                    height: 20,
                   ),
-                const SizedBox(
-                  height: 20,
-                ),
                 TextFormField(
                   keyboardType: TextInputType.text,
                   controller: nameController,
@@ -88,7 +113,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     labelText: 'Habit Name',
                     labelStyle: TextStyle(
                         fontSize: 20,
-                        color: Color(0xff1855f4),
+                        color: primaryColor,
                         fontWeight: FontWeight.bold),
                     hintText: 'ex: Walking',
                     border: OutlineInputBorder(),
@@ -104,7 +129,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     labelText: 'Habit Description',
                     labelStyle: TextStyle(
                         fontSize: 20,
-                        color: Color(0xff1855f4),
+                        color: primaryColor,
                         fontWeight: FontWeight.bold),
                     hintText: ' need',
                     border: OutlineInputBorder(),
@@ -130,7 +155,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     labelText: 'Frequency',
                     labelStyle: TextStyle(
                         fontSize: 20,
-                        color: Color(0xff1855f4),
+                        color: primaryColor,
                         fontWeight: FontWeight.bold),
                     border: OutlineInputBorder(),
                   ),
@@ -155,7 +180,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     labelText: 'Time',
                     labelStyle: TextStyle(
                         fontSize: 20,
-                        color: Color(0xff1855f4),
+                        color: primaryColor,
                         fontWeight: FontWeight.bold),
                     border: OutlineInputBorder(),
                   ),
@@ -163,7 +188,36 @@ class _AddHabitFormState extends State<AddHabitForm> {
                 const SizedBox(
                   height: 20,
                 ),
+                TextFormField(
+                  controller: TextEditingController(text: formattedDate),
+                  decoration: InputDecoration(
+                    labelText: 'Term',
+                    labelStyle: const TextStyle(
+                        fontSize: 20,
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold),
+                    border: OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        _selectDate(context);
+                      },
+                      icon: const Icon(Icons.calendar_today),
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    elevation: 5,
+                    backgroundColor: primaryColor,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
                   onPressed: () async {
                     if (selectedFrequency != null &&
                         selectedTime != null &&
@@ -175,8 +229,10 @@ class _AddHabitFormState extends State<AddHabitForm> {
                         description: descriptionController.text,
                         frequency: selectedFrequency!,
                         time: selectedTime!,
+                        date: formattedDate,
                       );
                       habit.habitType = selectedHabitType;
+                      print('Selected Date: $formattedDate');
                       StoreProvider.of<AppState>(context).dispatch(
                         AddHabitAction(habit),
                       );
@@ -186,6 +242,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                       setState(() {
                         selectedFrequency = null;
                         selectedTime = null;
+                        formattedDate = null;
                       });
                       Navigator.push(
                           context,
@@ -193,7 +250,10 @@ class _AddHabitFormState extends State<AddHabitForm> {
                               builder: (context) => const HabitStatus()));
                     }
                   },
-                  child: const Text('Add Habit'),
+                  child: const Text(
+                    'Add Habit',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),
