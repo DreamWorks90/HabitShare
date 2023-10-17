@@ -15,6 +15,7 @@ class Habit {
   final HabitFrequency frequency;
   final HabitTime time;
   String? habitType;
+  String? date;
 
   Habit({
     required this.name,
