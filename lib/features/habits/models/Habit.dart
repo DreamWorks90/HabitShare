@@ -23,6 +23,6 @@ class Habit {
     required this.frequency,
     required this.time,
     this.habitType,
-    this.date,
+    required String date,
   });
 }
