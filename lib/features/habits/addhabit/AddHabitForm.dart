@@ -177,6 +177,12 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     labelStyle: TextStyle(
                         color: primaryColor, fontWeight: FontWeight.bold),
                     border: OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        _selectDate(context);
+                      },
+                      icon: const Icon(Icons.calendar_today),
+                    ),
                   ),
                 ),
                 const SizedBox(
@@ -187,7 +193,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   decoration: InputDecoration(
                     labelText: 'Term',
                     labelStyle: const TextStyle(
-                        color: Colors.blue, fontWeight: FontWeight.bold),
+                    color: Colors.blue, fontWeight: FontWeight.bold),
                     border: OutlineInputBorder(),
                     suffixIcon: IconButton(
                       onPressed: () {
@@ -221,7 +227,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                         description: descriptionController.text,
                         frequency: selectedFrequency!,
                         time: selectedTime!,
-                        date: formattedDate,
+                        date: formattedDate!,
                       );
                       habit.habitType = selectedHabitType;
                       print('Selected Date: $formattedDate');
