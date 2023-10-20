@@ -54,6 +54,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
               'Add Habit',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
             ),
+            centerTitle: true,
             leading: IconButton(
                 onPressed: () {
                   Navigator.push(
@@ -85,7 +86,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                         });
                       },
                       child: const Text(
-                        'BUILD',
+                        'Build',
                         style: TextStyle(fontSize: 20, color: Colors.white),
                       ),
                     ),
@@ -96,25 +97,23 @@ class _AddHabitFormState extends State<AddHabitForm> {
                         });
                       },
                       child: const Text(
-                        'Quilt',
+                        'Quit',
                         style: TextStyle(fontSize: 20, color: Colors.white),
                       ),
                     ),
                   ],
                 ),
-                if (selectedHabitType != null)
-                  const SizedBox(
-                    height: 20,
-                  ),
+                // if (selectedHabitType != null)
+                const SizedBox(
+                  height: 30,
+                ),
                 TextFormField(
                   keyboardType: TextInputType.text,
                   controller: nameController,
                   decoration: const InputDecoration(
                     labelText: 'Habit Name',
                     labelStyle: TextStyle(
-                        fontSize: 20,
-                        color: primaryColor,
-                        fontWeight: FontWeight.bold),
+                        color: primaryColor, fontWeight: FontWeight.bold),
                     hintText: 'ex: Walking',
                     border: OutlineInputBorder(),
                   ),
@@ -123,14 +122,13 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   height: 20,
                 ),
                 TextFormField(
+                  maxLines: 3,
                   keyboardType: TextInputType.text,
                   controller: descriptionController,
                   decoration: const InputDecoration(
                     labelText: 'Habit Description',
                     labelStyle: TextStyle(
-                        fontSize: 20,
-                        color: primaryColor,
-                        fontWeight: FontWeight.bold),
+                        color: primaryColor, fontWeight: FontWeight.bold),
                     hintText: ' need',
                     border: OutlineInputBorder(),
                   ),
@@ -154,9 +152,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   decoration: const InputDecoration(
                     labelText: 'Frequency',
                     labelStyle: TextStyle(
-                        fontSize: 20,
-                        color: primaryColor,
-                        fontWeight: FontWeight.bold),
+                        color: primaryColor, fontWeight: FontWeight.bold),
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -179,9 +175,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   decoration: const InputDecoration(
                     labelText: 'Time',
                     labelStyle: TextStyle(
-                        fontSize: 20,
-                        color: primaryColor,
-                        fontWeight: FontWeight.bold),
+                        color: primaryColor, fontWeight: FontWeight.bold),
                     border: OutlineInputBorder(),
                     suffixIcon: IconButton(
                       onPressed: () {
@@ -199,10 +193,8 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   decoration: InputDecoration(
                     labelText: 'Term',
                     labelStyle: const TextStyle(
-                        fontSize: 20,
-                        color: primaryColor,
-                        fontWeight: FontWeight.bold),
-                    border: const OutlineInputBorder(),
+                    color: Colors.blue, fontWeight: FontWeight.bold),
+                    border: OutlineInputBorder(),
                     suffixIcon: IconButton(
                       onPressed: () {
                         _selectDate(context);
@@ -212,7 +204,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   ),
                 ),
                 const SizedBox(
-                  height: 20,
+                  height: 150,
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -250,10 +242,32 @@ class _AddHabitFormState extends State<AddHabitForm> {
                         selectedTime = null;
                         formattedDate = null;
                       });
+                      if (selectedHabitType == null) {
+                        print("please select habit type");
+                      }
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => const HabitStatus()));
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Validation Error'),
+                            content: const Text(
+                                'Please make sure to fill in all the required fields and select Build/Quit before proceeding.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     }
                   },
                   child: const Text(
