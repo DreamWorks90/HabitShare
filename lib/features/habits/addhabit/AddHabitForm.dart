@@ -188,7 +188,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     labelText: 'Term',
                     labelStyle: const TextStyle(
                         color: primaryColor, fontWeight: FontWeight.bold),
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       onPressed: () {
                         _selectDate(context);
