@@ -4,7 +4,11 @@ import 'package:HabitShare/features/habits/models/Habit.dart';
 class AppState {
   final List<Habit> habits;
   final List<Habit> completedHabits;
-  AppState({required this.habits, required this.completedHabits});
+  List<Habit> events;
+  AppState(
+      {required this.habits,
+      required this.completedHabits,
+      required this.events});
 }
 
 final List<Habit> initialHabits = [];
@@ -35,6 +39,7 @@ AppState appReducer(AppState state, dynamic action) {
     return AppState(
       habits: List.from(state.habits)..add(action.habit),
       completedHabits: state.completedHabits,
+      events: [],
     );
   } else if (action is RemoveHabitAction) {
     final updatedHabits = state.habits.where((habit) {
@@ -43,6 +48,7 @@ AppState appReducer(AppState state, dynamic action) {
     return AppState(
       habits: updatedHabits,
       completedHabits: state.completedHabits,
+      events: [],
     );
   } else if (action is AddCompletedHabitAction) {
     final updatedHabits = state.habits.where((habit) {
@@ -51,7 +57,7 @@ AppState appReducer(AppState state, dynamic action) {
     }).toList();
     return AppState(
       habits: updatedHabits, // Don't modify habits
-      completedHabits: List.from(state.completedHabits),
+      completedHabits: List.from(state.completedHabits), events: [],
     );
   }
   return state;
@@ -62,5 +68,6 @@ final store = Store<AppState>(
   initialState: AppState(
     habits: initialHabits,
     completedHabits: [],
+    events: [],
   ),
 );
