@@ -45,6 +45,9 @@ dependencies:
   intl: ^0.18.1
   qr_code_scanner: ^1.0.1
   qr_flutter: ^4.1.0
+  flutter_slidable: ^3.0.0
+  flutter_timeline_calendar: ^1.0.9
+  intl: ^0.18.1
 
 dev_dependencies:
   flutter_test:

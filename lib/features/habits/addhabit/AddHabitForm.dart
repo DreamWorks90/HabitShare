@@ -177,12 +177,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     labelStyle: TextStyle(
                         color: primaryColor, fontWeight: FontWeight.bold),
                     border: OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        _selectDate(context);
-                      },
-                      icon: const Icon(Icons.calendar_today),
-                    ),
                   ),
                 ),
                 const SizedBox(
