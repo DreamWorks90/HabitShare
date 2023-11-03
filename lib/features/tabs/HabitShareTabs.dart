@@ -17,7 +17,7 @@ class _HabitStatusState extends State<HabitStatus> {
     const HabitList(),
     const FriendsTab(),
     const ReportsTab(),
-    const SettingsTab(),
+    SettingsPage(),
   ];
 
   void _onItemTapped(int index) {

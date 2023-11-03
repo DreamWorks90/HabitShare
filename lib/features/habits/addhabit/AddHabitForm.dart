@@ -21,7 +21,9 @@ class _AddHabitFormState extends State<AddHabitForm> {
   HabitTime? selectedTime;
   String? selectedHabitType;
   DateTime? selectedDate;
-  String? formattedDate;
+  String? startDate;
+  String? termDate;
+  Map<String, dynamic>? selectedFriend;
 
   Future<void> _selectDate(BuildContext context) async {
     DateTime? pickedDate = await showDatePicker(
@@ -34,16 +36,32 @@ class _AddHabitFormState extends State<AddHabitForm> {
     if (pickedDate != null) {
       setState(() {
         selectedDate = pickedDate;
-        formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate!);
+        startDate = DateFormat('yyyy-MM-dd').format(selectedDate!);
+      });
+    }
+  }
+
+  Future<void> _selectTermDate(BuildContext context) async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: termDate != null
+          ? DateTime.parse(termDate!)
+          : startDate != null
+              ? DateTime.parse(startDate!)
+              : DateTime.now(),
+      firstDate: DateTime(2021),
+      lastDate: DateTime(2030),
+    );
+
+    if (pickedDate != null) {
+      setState(() {
+        termDate = DateFormat('yyyy-MM-dd').format(pickedDate);
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    String? formattedDate = selectedDate != null
-        ? DateFormat('yyyy-MM-dd').format(selectedDate!)
-        : '';
     return Scaffold(
       appBar: AppBar(
         backgroundColor: primaryColor,
@@ -60,7 +78,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
             icon: const Icon(Icons.arrow_back_outlined)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -178,12 +196,12 @@ class _AddHabitFormState extends State<AddHabitForm> {
               height: 20,
             ),
             TextFormField(
-              controller: TextEditingController(text: formattedDate),
+              controller: TextEditingController(text: startDate),
               decoration: InputDecoration(
-                labelText: 'Term',
+                labelText: 'Start Date',
                 labelStyle: const TextStyle(
-                    color: Colors.blue, fontWeight: FontWeight.bold),
-                border: OutlineInputBorder(),
+                    color: primaryColor, fontWeight: FontWeight.bold),
+                border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   onPressed: () {
                     _selectDate(context);
@@ -193,7 +211,25 @@ class _AddHabitFormState extends State<AddHabitForm> {
               ),
             ),
             const SizedBox(
-              height: 70,
+              height: 20,
+            ),
+            TextFormField(
+              controller: TextEditingController(text: termDate ?? ''),
+              decoration: InputDecoration(
+                labelText: 'Term Date',
+                labelStyle: const TextStyle(
+                    color: primaryColor, fontWeight: FontWeight.bold),
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    _selectTermDate(context);
+                  },
+                  icon: const Icon(Icons.calendar_today),
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 50,
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -207,19 +243,21 @@ class _AddHabitFormState extends State<AddHabitForm> {
               ),
               onPressed: () async {
                 if (selectedFrequency != null &&
-                    selectedTime != null &&
                     nameController.text.isNotEmpty &&
                     descriptionController.text.isNotEmpty &&
-                    selectedHabitType != null) {
+                    selectedHabitType != null &&
+                    startDate != null &&
+                    termDate != null) {
                   final habit = Habit(
                     name: nameController.text,
                     description: descriptionController.text,
                     frequency: selectedFrequency!,
                     time: selectedTime!,
-                    date: formattedDate!,
+                    startDate: startDate!,
+                    termDate: termDate!,
                   );
                   habit.habitType = selectedHabitType;
-                  print('Selected Date: $formattedDate');
+                  //habit.sharedWith = selectedFriend;
                   StoreProvider.of<AppState>(context).dispatch(
                     AddHabitAction(habit),
                   );
@@ -229,7 +267,8 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   setState(() {
                     selectedFrequency = null;
                     selectedTime = null;
-                    formattedDate = null;
+                    startDate = null;
+                    termDate = null;
                   });
                   if (selectedHabitType == null) {
                     print("please select habit type");
