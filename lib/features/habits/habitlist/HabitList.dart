@@ -57,7 +57,6 @@ class _HabitListState extends State<HabitList> {
       converter: (Store<AppState> store) => store.state.habits,
       builder: (BuildContext context, List<Habit> habits) {
         final completedHabits = store.state.completedHabits;
-
         return Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,

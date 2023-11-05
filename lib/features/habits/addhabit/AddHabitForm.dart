@@ -261,7 +261,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   StoreProvider.of<AppState>(context).dispatch(
                     AddHabitAction(habit),
                   );
-
                   nameController.clear();
                   descriptionController.clear();
                   setState(() {

@@ -1,35 +1,3 @@
-/*enum HabitFrequency {
-  daily,
-  weekly,
-}
-
-enum HabitTime {
-  morning,
-  evening,
-  night,
-}
-
-class Habit {
-  final String name;
-  final String description;
-  final HabitFrequency frequency;
-  final HabitTime time;
-  String? habitType;
-  String? date;
-  DateTime? completionDate;
-
-  Habit({
-    required this.name,
-    required this.description,
-    required this.frequency,
-    required this.time,
-    this.habitType,
-    this.date,
-    this.completionDate,
-  });
-}
-*/
-
 enum HabitFrequency {
   daily,
   weekly,
@@ -61,6 +29,6 @@ class Habit {
     this.habitType,
     required this.startDate,
     required this.termDate,
-    this.completionDate,
+    this.completionDate
   });
 }
