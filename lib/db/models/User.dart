@@ -23,7 +23,7 @@ class User {
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
-        user_id: map['user_id']?.toInt() ?? 0,
+      user_id: map['user_id']?.toInt() ?? 0,
       name: map['name'] ?? '',
       email: map['email'] ?? '',
       password: map['password'] ?? ''

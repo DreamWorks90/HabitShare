@@ -22,7 +22,7 @@ class UserService {
     final db = await _dbHelper.database;
 
     String email = user.email;
-    List<Map<String, Object?>> users = await db.rawQuery('SELECT * FROM my_table WHERE email=?', [email]);
+    List<Map<String, Object?>> users = await db.rawQuery('SELECT * FROM users WHERE email=?', [email]);
     return users;
   }
 

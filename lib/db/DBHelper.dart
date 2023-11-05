@@ -50,7 +50,10 @@ class DBHelper {
       CREATE TABLE friends (
 	      friend_id integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	      email varchar NOT NULL UNIQUE,
-	      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+	      name varchar NOT NULL,	      
+	      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	      user_id integer NOT NULL,
+	      FOREIGN KEY (user_id) REFERENCES users (user_id)
       );''';
 
     await db.execute(queryCreateFriendsTable);
