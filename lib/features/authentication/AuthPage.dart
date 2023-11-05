@@ -16,57 +16,58 @@ class _AuthPageState extends State<AuthPage> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: const Column(
+        body: Center(
+            child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Center(
-              child: Card(
-                child: Text(
-                  'Habit Share',
-                  style: TextStyle(
-                    fontSize: 50,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
+          children: [
+            Image.asset(
+              'assets/images/logo.png',
+              height: 200,
             ),
           ],
-        ),
+        )),
         persistentFooterButtons: <Widget>[
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              elevation: 5,
-              backgroundColor: primaryColor,
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  elevation: 5,
+                  backgroundColor: primaryColor,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => SignUp()));
+                },
+                child: const Text('Sign Up', style: buttonTextStyle),
               ),
-            ),
-            onPressed: () {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => SignUp()));
-            },
-            child: const Text('Sign Up', style: buttonTextStyle),
-          ),
-          const SizedBox(width: 30),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              elevation: 5,
-              backgroundColor: primaryColor,
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+              const SizedBox(width: 15),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  elevation: 5,
+                  backgroundColor: primaryColor,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => SignIn()));
+                },
+                child: const Text(
+                  'Sign In',
+                  style: buttonTextStyle,
+                ),
               ),
-            ),
-            onPressed: () {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => SignIn()));
-            },
-            child: const Text(
-              'Sign In',
-              style: buttonTextStyle,
-            ),
-          ),
+            ],
+          )
         ],
       ),
     );

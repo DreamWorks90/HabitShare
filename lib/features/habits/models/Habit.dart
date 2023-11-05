@@ -1,6 +1,7 @@
 enum HabitFrequency {
   daily,
   weekly,
+  weekend,
 }
 
 enum HabitTime {
@@ -15,7 +16,10 @@ class Habit {
   final HabitFrequency frequency;
   final HabitTime time;
   String? habitType;
-  String? date;
+  final String startDate; // Assuming date is stored as a String in your class
+  final String termDate; // Assuming date is stored as a String in your class
+  String?
+      completionDate; // Date when the habit was completed (null if not completed)
 
   Habit({
     required this.name,
@@ -23,6 +27,8 @@ class Habit {
     required this.frequency,
     required this.time,
     this.habitType,
-    required String date,
+    required this.startDate,
+    required this.termDate,
+    this.completionDate
   });
 }

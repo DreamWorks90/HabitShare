@@ -1,6 +1,7 @@
 import 'package:HabitShare/Constants.dart';
-import 'package:HabitShare/features/friends/LinkShare/LinkShare.dart';
-import 'package:HabitShare/features/friends/QRCode/QRCode.dart';
+import 'package:HabitShare/features/friends/addfriends/LinkShare.dart';
+import 'package:HabitShare/features/friends/addfriends/QRCode.dart';
+import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter/material.dart';
 
 class FriendsTab extends StatefulWidget {
@@ -25,23 +26,24 @@ class _FriendsTabState extends State<FriendsTab> {
     return Scaffold(
       appBar: isPopoverVisible
           ? AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: primaryColor,
-        title: Center(child: Text("Add Friends", style: appbarTextStyle)),
-      )
+              automaticallyImplyLeading: false,
+              backgroundColor: primaryColor,
+              title: const Center(
+                  child: Text("Add Friends", style: appbarTextStyle)),
+            )
           : AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: primaryColor,
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.person),
-            onPressed: togglePopover,
-          ),
-        ],
-        title: Center(
-          child: Text("Friends", style: appbarTextStyle),
-        ),
-      ),
+              automaticallyImplyLeading: false,
+              backgroundColor: primaryColor,
+              actions: <Widget>[
+                IconButton(
+                  icon: const Icon(Icons.person),
+                  onPressed: togglePopover,
+                ),
+              ],
+              title: const Center(
+                child: Text("Friends", style: appbarTextStyle),
+              ),
+            ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -51,35 +53,37 @@ class _FriendsTabState extends State<FriendsTab> {
               Container(
                 //height: 700,
                 //width: 350,
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => QRCode()));
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const QRCode()));
                       },
-                      child: Text("QR Code", style: buttonTextStyle),
+                      child: const Text("QR Code", style: buttonTextStyle),
                       style: ElevatedButton.styleFrom(
                         elevation: 5,
                         backgroundColor: primaryColor,
-                        padding:
-                        EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 40, vertical: 10),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                     ),
-                    SizedBox(height: 30.0),
+                    const SizedBox(height: 30.0),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         elevation: 5,
                         backgroundColor: primaryColor,
-                        padding:
-                        EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 40, vertical: 10),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -88,9 +92,9 @@ class _FriendsTabState extends State<FriendsTab> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => LinkShare()));
+                                builder: (context) => const LinkShare()));
                       },
-                      child: Text(
+                      child: const Text(
                         "Via Link Share",
                         style: buttonTextStyle,
                       ),

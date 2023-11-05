@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:HabitShare/redux/AppState.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutter_timeline_calendar/timeline/utils/datetime_extension.dart';
 import 'package:redux/redux.dart';
 import 'package:HabitShare/features/habits/addhabit/AddHabitForm.dart';
 import 'package:HabitShare/features/habits/models/Habit.dart';
@@ -57,6 +58,7 @@ class _HabitListState extends State<HabitList> {
       converter: (Store<AppState> store) => store.state.habits,
       builder: (BuildContext context, List<Habit> habits) {
         final completedHabits = store.state.completedHabits;
+
         return Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,
@@ -181,172 +183,153 @@ class _HabitListState extends State<HabitList> {
                                 }
                               } else if (habit.frequency ==
                                   HabitFrequency.weekly) {
-                                if (habit.startDate != null) {
-                                  final startDate =
-                                      DateTime.parse(habit.startDate!);
-
-                                  // Check if the selected date is in the next 7 days and is the same weekday as the habit's weekday
-                                  final next7Days = List.generate(
-                                      7,
-                                      (index) => selectedDate
-                                          .add(Duration(days: index)));
-                                  isVisible = next7Days.any((date) =>
-                                      isSameDay(date, selectedDate) &&
-                                      date.weekday == startDate.weekday);
-
-                                  // Check if the selected date is before the habit's term date
-                                  if (isVisible && habit.termDate != null) {
-                                    final termDate =
-                                        DateTime.parse(habit.termDate!);
-                                    isVisible = selectedDate.isBefore(termDate);
-                                  }
-                                }
+                                // Check if the selected date falls within the next 7 days
+                                final next7Days = List.generate(
+                                    7,
+                                    (index) => DateTime.now()
+                                        .add(Duration(days: index)));
+                                isVisible = next7Days.any(
+                                    (date) => isSameDay(date, selectedDate));
                               }
+
                               if (isVisible) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    _showHabitDetailsDialog(context, habit);
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 15, right: 15, top: 2),
-                                    child: Card(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20)),
-                                      color: getCardColor(habit.habitType),
-                                      elevation: 4.0,
-                                      child: ListTile(
-                                        contentPadding:
-                                            const EdgeInsets.all(10.0),
-                                        leading: Padding(
-                                          padding:
-                                              const EdgeInsets.only(right: 1),
-                                          child: Radio(
-                                            value: habit,
-                                            groupValue:
-                                                completedHabits.contains(habit)
-                                                    ? habit
-                                                    : null,
-                                            onChanged: (selectedHabit) {
-                                              showDialog(
-                                                context: context,
-                                                builder: (BuildContext
-                                                    dialogContext) {
-                                                  return AlertDialog(
-                                                    title: const Text(
-                                                        'Confirm Habit Completion'),
-                                                    content: const Text(
-                                                        'Have you completed this habit?'),
-                                                    actions: <Widget>[
-                                                      TextButton(
-                                                        child: const Text(
-                                                            'Cancel'),
-                                                        onPressed: () {
-                                                          Navigator.of(
-                                                                  dialogContext)
-                                                              .pop(); // Close the dialog
-                                                        },
-                                                      ),
-                                                      TextButton(
-                                                        child:
-                                                            const Text('Yes'),
-                                                        onPressed: () {
-                                                          setState(() {
-                                                            if (completedHabits
-                                                                .contains(
-                                                                    selectedHabit)) {
-                                                              completedHabits
-                                                                  .remove(
-                                                                      selectedHabit);
-                                                              // Dispatch the action to remove the habit from completedHabits
-                                                              StoreProvider.of<
-                                                                          AppState>(
-                                                                      context)
-                                                                  .dispatch(
-                                                                RemoveCompletedHabitAction(
-                                                                    selectedHabit!
-                                                                        .name),
-                                                              );
-                                                            } else {
-                                                              completedHabits.add(
-                                                                  selectedHabit!);
-                                                              // Dispatch the action to add the habit to completedHabits
-                                                              StoreProvider.of<
-                                                                          AppState>(
-                                                                      context)
-                                                                  .dispatch(
-                                                                AddCompletedHabitAction(
-                                                                    selectedHabit),
-                                                              );
-                                                            }
-                                                          });
-                                                          Navigator.of(
-                                                                  dialogContext)
-                                                              .pop(); // Close the dialog
-                                                        },
-                                                      ),
-                                                    ],
-                                                  );
-                                                },
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                        title: Text(
-                                          habit.name.toUpperCase(),
-                                          style: const TextStyle(
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        subtitle: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              habit.description,
-                                              style: const TextStyle(
-                                                  fontSize: 13.0,
-                                                  fontWeight: FontWeight.bold),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 8.0),
-                                            Row(
-                                              children: [
-                                                const Text(
-                                                  'Streak: ',
-                                                  style: TextStyle(
-                                                      fontSize: 13.0,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                const Text(
-                                                  ' || ',
-                                                  style: TextStyle(
-                                                      fontSize: 13.0,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  'Frequency:  ${habit.frequency.toString().split('.').last}',
-                                                  style: const TextStyle(
-                                                      fontSize: 13.0,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                        trailing: IconButton(
-                                          onPressed: () {
-                                            _showDeleteConfirmationDialog(
-                                                context, habit);
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 15, right: 15, top: 2),
+                                  child: Card(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(20)),
+                                    color: getCardColor(habit.habitType),
+                                    elevation: 4.0,
+                                    child: ListTile(
+                                      contentPadding:
+                                          const EdgeInsets.all(10.0),
+                                      leading: Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 1),
+                                        child: Radio(
+                                          value: habit,
+                                          groupValue:
+                                              completedHabits.contains(habit)
+                                                  ? habit
+                                                  : null,
+                                          onChanged: (selectedHabit) {
+                                            showDialog(
+                                              context: context,
+                                              builder:
+                                                  (BuildContext dialogContext) {
+                                                return AlertDialog(
+                                                  title: const Text(
+                                                      'Confirm Habit Completion'),
+                                                  content: const Text(
+                                                      'Have you completed this habit?'),
+                                                  actions: <Widget>[
+                                                    TextButton(
+                                                      child:
+                                                          const Text('Cancel'),
+                                                      onPressed: () {
+                                                        Navigator.of(
+                                                                dialogContext)
+                                                            .pop(); // Close the dialog
+                                                      },
+                                                    ),
+                                                    TextButton(
+                                                      child: const Text('Yes'),
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          if (completedHabits
+                                                              .contains(
+                                                                  selectedHabit)) {
+                                                            completedHabits.remove(
+                                                                selectedHabit);
+                                                            // Dispatch the action to remove the habit from completedHabits
+                                                            StoreProvider.of<
+                                                                        AppState>(
+                                                                    context)
+                                                                .dispatch(
+                                                              RemoveCompletedHabitAction(
+                                                                  selectedHabit!
+                                                                      .name),
+                                                            );
+                                                          } else {
+                                                            completedHabits.add(
+                                                                selectedHabit!);
+                                                            // Dispatch the action to add the habit to completedHabits
+                                                            StoreProvider.of<
+                                                                        AppState>(
+                                                                    context)
+                                                                .dispatch(
+                                                              AddCompletedHabitAction(
+                                                                  selectedHabit),
+                                                            );
+                                                          }
+                                                        });
+                                                        Navigator.of(
+                                                                dialogContext)
+                                                            .pop(); // Close the dialog
+                                                      },
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
                                           },
-                                          icon: const Icon(Icons.delete),
                                         ),
+                                      ),
+                                      title: Text(
+                                        habit.name.toUpperCase(),
+                                        style: const TextStyle(
+                                          fontSize: 15.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            habit.description,
+                                            style: const TextStyle(
+                                                fontSize: 13.0,
+                                                fontWeight: FontWeight.bold),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 8.0),
+                                          Row(
+                                            children: [
+                                              const Text(
+                                                'Streak: ',
+                                                style: TextStyle(
+                                                    fontSize: 13.0,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              const Text(
+                                                ' || ',
+                                                style: TextStyle(
+                                                    fontSize: 13.0,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              Text(
+                                                'Frequency:  ${habit.frequency.toString().split('.').last}',
+                                                style: const TextStyle(
+                                                    fontSize: 13.0,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: IconButton(
+                                        onPressed: () {
+                                          _showDeleteConfirmationDialog(
+                                              context, habit);
+                                        },
+                                        icon: const Icon(Icons.delete),
                                       ),
                                     ),
                                   ),
@@ -521,7 +504,7 @@ class _CompletedHabitsCardState extends State<CompletedHabitsCard> {
     return GestureDetector(
       onTap: widget.onCardTapped,
       child: Container(
-        height: 125,
+        height: 115,
         width: 380,
         color: Colors.grey.shade200,
         child: ListView.builder(
@@ -578,67 +561,4 @@ class _CompletedHabitsCardState extends State<CompletedHabitsCard> {
       ),
     );
   }
-}
-
-void _showHabitDetailsDialog(BuildContext context, Habit habit) {
-  showDialog(
-    context: context,
-    builder: (BuildContext dialogContext) {
-      return AlertDialog(
-        title: Text(
-          '${habit.name}',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-        ),
-        content: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Habit Description:  ${habit.description}',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            Text(
-              'Frequency:  ${habit.frequency.toString().split('.').last}',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            Text(
-              'Time:  ${habit.time.toString().split('.').last}',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            SizedBox(
-              height: 15,
-            ), // Display habit time if available, 'N/A' otherwise
-            Text(
-              'Start Date:  ${habit.startDate ?? 'N/A'}',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            SizedBox(
-              height: 15,
-            ), // Display start date if available, 'N/A' otherwise
-            Text(
-              'Term Date:  ${habit.termDate ?? 'N/A'}',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            SizedBox(
-              height: 15,
-            ), // Display term date if available, 'N/A' otherwise            // Add more details like time, start date, term date, streak, etc.
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Close'),
-            onPressed: () {
-              Navigator.of(dialogContext).pop(); // Close the dialog
-            },
-          ),
-        ],
-      );
-    },
-  );
 }
