@@ -22,8 +22,8 @@ class FriendService {
     final db = await _dbHelper.database;
 
     int? user_id = user.user_id;
-    List<Map<String, Object?>> users = await db.rawQuery('SELECT * FROM friends WHERE user_id=?', [user_id]);
-    return users;
+    List<Map<String, Object?>> friends = await db.rawQuery('SELECT * FROM friends WHERE user_id=?', [user_id]);
+    return friends;
   }
 
 }
