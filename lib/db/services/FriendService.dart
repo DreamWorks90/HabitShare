@@ -21,8 +21,8 @@ class FriendService {
   Future<List<Map<String, Object?>>> retrieveFriendsOfUser(User user) async {
     final db = await _dbHelper.database;
 
-    int? user_id = user.user_id;
-    List<Map<String, Object?>> friends = await db.rawQuery('SELECT * FROM friends WHERE user_id=?', [user_id]);
+    int? userId = user.user_id;
+    List<Map<String, Object?>> friends = await db.rawQuery('SELECT * FROM friends WHERE user_id=?', [userId]);
     return friends;
   }
 
