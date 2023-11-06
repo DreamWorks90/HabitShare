@@ -94,38 +94,33 @@ class _HabitListState extends State<HabitList> {
                       shape: BoxShape.circle,
                     ),
                   ),
+                  eventLoader: (day) {
+                    // Map the habit objects to their corresponding event indicator (can be any widget)
+                    return completedHabitsForToday
+                        .where((habit) => isSameDay(
+                            DateTime.parse(habit.completionDate!), day))
+                        .map((habit) => const Icon(Icons
+                            .check)) // Use Icons.check as an example, you can customize the indicator
+                        .toList();
+                  },
                   onDaySelected: (DateTime day, DateTime focusedDay) {
                     setState(() {
-                      // Check if the selected day is the current date
-                      if (isSameDay(day, selectedDate)) {
-                        // Move habits from active list to completed list for one day
-                        for (var completedHabit in completedHabits) {
-                          // Remove from completedHabits
-                          completedHabits.remove(completedHabit);
+                      selectedDate = day;
+                      completedHabitsForToday.clear();
 
-                          // Add to activeHabits
-                          activeHabits.add(completedHabit);
+                      for (var habit in habits) {
+                        if (habit.completionDate != null) {
+                          DateTime completionDate =
+                              DateTime.parse(habit.completionDate!);
+                          DateTime? termDate;
+                          termDate = DateTime.parse(habit.termDate);
 
-                          // Update the completionDate to null (resetting it)
-                          completedHabit.completionDate = null;
-                        }
-                      } else {
-                        // Move habits back from completed list to active list
-                        if (completedHabits.isNotEmpty) {
-                          for (var completedHabit in completedHabits) {
-                            // Remove from completedHabits
-                            completedHabits.remove(completedHabit);
-
-                            // Add to activeHabits
-                            activeHabits.add(completedHabit);
-
-                            // Update the completionDate to null (resetting it)
-                            completedHabit.completionDate = null;
+                          if (completionDate.isBefore(selectedDate) &&
+                              (termDate.isAfter(selectedDate))) {
+                            completedHabitsForToday.add(habit);
                           }
                         }
                       }
-
-                      selectedDate = day;
                     });
                   },
 
@@ -151,12 +146,11 @@ class _HabitListState extends State<HabitList> {
 
                               bool isVisible = false;
                               if (habit.frequency == HabitFrequency.daily) {
-                                if (habit.startDate != null &&
-                                    habit.termDate != null) {
+                                if (habit.termDate != null) {
                                   final startDate =
-                                      DateTime.parse(habit.startDate!);
+                                      DateTime.parse(habit.startDate);
                                   final termDate =
-                                      DateTime.parse(habit.termDate!);
+                                      DateTime.parse(habit.termDate);
                                   isVisible = selectedDate.isAfter(startDate) &&
                                       selectedDate.isBefore(termDate);
                                 } else {
@@ -168,12 +162,11 @@ class _HabitListState extends State<HabitList> {
                                   (selectedDate.weekday == DateTime.saturday ||
                                       selectedDate.weekday ==
                                           DateTime.sunday)) {
-                                if (habit.startDate != null &&
-                                    habit.termDate != null) {
+                                if (habit.termDate != null) {
                                   final startDate =
-                                      DateTime.parse(habit.startDate!);
+                                      DateTime.parse(habit.startDate);
                                   final termDate =
-                                      DateTime.parse(habit.termDate!);
+                                      DateTime.parse(habit.termDate);
                                   isVisible = selectedDate.isAfter(startDate) &&
                                       selectedDate.isBefore(termDate);
                                 } else {
@@ -182,25 +175,23 @@ class _HabitListState extends State<HabitList> {
                                 }
                               } else if (habit.frequency ==
                                   HabitFrequency.weekly) {
-                                if (habit.startDate != null) {
-                                  final startDate =
-                                      DateTime.parse(habit.startDate!);
+                                final startDate =
+                                    DateTime.parse(habit.startDate);
 
-                                  // Check if the selected date is in the next 7 days and is the same weekday as the habit's weekday
-                                  final next7Days = List.generate(
-                                      7,
-                                      (index) => selectedDate
-                                          .add(Duration(days: index)));
-                                  isVisible = next7Days.any((date) =>
-                                      isSameDay(date, selectedDate) &&
-                                      date.weekday == startDate.weekday);
+                                // Check if the selected date is in the next 7 days and is the same weekday as the habit's weekday
+                                final next7Days = List.generate(
+                                    7,
+                                    (index) => selectedDate
+                                        .add(Duration(days: index)));
+                                isVisible = next7Days.any((date) =>
+                                    isSameDay(date, selectedDate) &&
+                                    date.weekday == startDate.weekday);
 
-                                  // Check if the selected date is before the habit's term date
-                                  if (isVisible && habit.termDate != null) {
-                                    final termDate =
-                                        DateTime.parse(habit.termDate!);
-                                    isVisible = selectedDate.isBefore(termDate);
-                                  }
+                                // Check if the selected date is before the habit's term date
+                                if (isVisible) {
+                                  final termDate =
+                                      DateTime.parse(habit.termDate);
+                                  isVisible = selectedDate.isBefore(termDate);
                                 }
                               }
                               if (isVisible) {
@@ -588,7 +579,7 @@ void _showHabitDetailsDialog(BuildContext context, Habit habit) {
       return AlertDialog(
         title: Text(
           '${habit.name}',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
         ),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -596,37 +587,37 @@ void _showHabitDetailsDialog(BuildContext context, Habit habit) {
           children: [
             Text(
               'Habit Description:  ${habit.description}',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
-            SizedBox(
+            const SizedBox(
               height: 15,
             ),
             Text(
               'Frequency:  ${habit.frequency.toString().split('.').last}',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
-            SizedBox(
+            const SizedBox(
               height: 15,
             ),
             Text(
               'Time:  ${habit.time.toString().split('.').last}',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
-            SizedBox(
+            const SizedBox(
               height: 15,
             ), // Display habit time if available, 'N/A' otherwise
             Text(
               'Start Date:  ${habit.startDate ?? 'N/A'}',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
-            SizedBox(
+            const SizedBox(
               height: 15,
             ), // Display start date if available, 'N/A' otherwise
             Text(
               'Term Date:  ${habit.termDate ?? 'N/A'}',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
-            SizedBox(
+            const SizedBox(
               height: 15,
             ), // Display term date if available, 'N/A' otherwise            // Add more details like time, start date, term date, streak, etc.
           ],
