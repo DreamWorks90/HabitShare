@@ -2,7 +2,6 @@ import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/friends/addfriends/LinkShare.dart';
 import 'package:HabitShare/features/friends/addfriends/QRCode.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
-
 import 'package:flutter/material.dart';
 
 class FriendsTab extends StatefulWidget {

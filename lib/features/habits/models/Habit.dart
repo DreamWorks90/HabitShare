@@ -29,6 +29,6 @@ class Habit {
     this.habitType,
     required this.startDate,
     required this.termDate,
-    this.completionDate,
+    this.completionDate
   });
 }
