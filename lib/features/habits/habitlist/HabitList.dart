@@ -579,7 +579,7 @@ void _showHabitDetailsDialog(BuildContext context, Habit habit) {
       return AlertDialog(
         title: Text(
           '${habit.name}',
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+          style: git const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
         ),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
