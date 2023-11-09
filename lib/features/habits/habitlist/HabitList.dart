@@ -1,6 +1,5 @@
 import 'package:HabitShare/Constants.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:HabitShare/redux/AppState.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -26,17 +25,6 @@ class _HabitListState extends State<HabitList> {
   bool _isCompletedHabitsCardVisible = false;
   bool isVisible = true;
 
-  @override
-  void initState() {
-    super.initState();
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight
-    ]);
-  }
-
   void _toggleCompletedHabitsCardVisibility() {
     setState(() {
       _isCompletedHabitsCardVisible = !_isCompletedHabitsCardVisible;
@@ -46,6 +34,8 @@ class _HabitListState extends State<HabitList> {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+
     // Initialize completedHabits list with habits completed for the current date
     completedHabits = activeHabits
         .where((habit) =>
@@ -93,33 +83,38 @@ class _HabitListState extends State<HabitList> {
                       shape: BoxShape.circle,
                     ),
                   ),
-                  eventLoader: (day) {
-                    // Map the habit objects to their corresponding event indicator (can be any widget)
-                    return completedHabitsForToday
-                        .where((habit) => isSameDay(
-                            DateTime.parse(habit.completionDate!), day))
-                        .map((habit) => const Icon(Icons
-                            .check)) // Use Icons.check as an example, you can customize the indicator
-                        .toList();
-                  },
                   onDaySelected: (DateTime day, DateTime focusedDay) {
                     setState(() {
-                      selectedDate = day;
-                      completedHabitsForToday.clear();
+                      // Check if the selected day is the current date
+                      if (isSameDay(day, selectedDate)) {
+                        // Move habits from active list to completed list for one day
+                        for (var completedHabit in completedHabits) {
+                          // Remove from completedHabits
+                          completedHabits.remove(completedHabit);
 
-                      for (var habit in habits) {
-                        if (habit.completionDate != null) {
-                          DateTime completionDate =
-                              DateTime.parse(habit.completionDate!);
-                          DateTime? termDate;
-                          termDate = DateTime.parse(habit.termDate);
+                          // Add to activeHabits
+                          activeHabits.add(completedHabit);
 
-                          if (completionDate.isBefore(selectedDate) &&
-                              (termDate.isAfter(selectedDate))) {
-                            completedHabitsForToday.add(habit);
+                          // Update the completionDate to null (resetting it)
+                          completedHabit.completionDate = null;
+                        }
+                      } else {
+                        // Move habits back from completed list to active list
+                        if (completedHabits.isNotEmpty) {
+                          for (var completedHabit in completedHabits) {
+                            // Remove from completedHabits
+                            completedHabits.remove(completedHabit);
+
+                            // Add to activeHabits
+                            activeHabits.add(completedHabit);
+
+                            // Update the completionDate to null (resetting it)
+                            completedHabit.completionDate = null;
                           }
                         }
                       }
+
+                      selectedDate = day;
                     });
                   },
 
@@ -349,58 +344,77 @@ class _HabitListState extends State<HabitList> {
                           ),
                         ),
                       ),
-                      SliverFillRemaining(
-                        child: Column(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: Text(
-                                'Completed Habits',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
+                      SliverToBoxAdapter(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              ExpansionTile(
+                                title: const Text(
+                                  'Completed Habits',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
-                              ),
-                            ),
-                            AnimatedPositioned(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                              bottom: _completedHabitsCardPosition,
-                              left: 0,
-                              right: 0,
-                              child: GestureDetector(
-                                onVerticalDragUpdate: (details) {
-                                  if (details.primaryDelta != null) {
-                                    setState(() {
-                                      _completedHabitsCardPosition +=
-                                          details.primaryDelta!;
-                                      if (_completedHabitsCardPosition > 0) {
-                                        _completedHabitsCardPosition = 0;
-                                      } else if (_completedHabitsCardPosition <
-                                          -300) {
-                                        // Set the height of the completed habits card
-                                        _completedHabitsCardPosition = -300;
-                                      }
-                                    });
-                                  }
-                                },
-                                onVerticalDragEnd: (details) {
-                                  if (_completedHabitsCardPosition < -150) {
-                                    // Set the threshold for card visibility
-                                    _toggleCompletedHabitsCardVisibility();
-                                  } else {
-                                    _toggleCompletedHabitsCardVisibility();
-                                  }
-                                },
-                                child: CompletedHabitsCard(
-                                  completedHabits: completedHabits,
-                                  onCardTapped:
-                                      _toggleCompletedHabitsCardVisibility,
-                                  getCardColor: getCardColor,
-                                ),
-                              ),
-                            ),
-                          ],
+                                children: [
+                                  const Padding(
+                                    padding: EdgeInsets.all(16.0),
+                                    child: Text(
+                                      'Swipe up',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  AnimatedPositioned(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                    bottom: _completedHabitsCardPosition,
+                                    left: 0,
+                                    right: 0,
+                                    child: GestureDetector(
+                                      onVerticalDragUpdate: (details) {
+                                        if (details.primaryDelta != null) {
+                                          setState(() {
+                                            _completedHabitsCardPosition +=
+                                                details.primaryDelta!;
+                                            if (_completedHabitsCardPosition >
+                                                0) {
+                                              _completedHabitsCardPosition = 0;
+                                            } else if (_completedHabitsCardPosition <
+                                                -300) {
+                                              // Set the height of the completed habits card
+                                              _completedHabitsCardPosition =
+                                                  -300;
+                                            }
+                                          });
+                                        }
+                                      },
+                                      onVerticalDragEnd: (details) {
+                                        if (_completedHabitsCardPosition <
+                                            -150) {
+                                          // Set the threshold for card visibility
+                                          _toggleCompletedHabitsCardVisibility();
+                                        } else {
+                                          _toggleCompletedHabitsCardVisibility();
+                                        }
+                                      },
+                                      child: SingleChildScrollView(
+                                        child: CompletedHabitsCard(
+                                          completedHabits: completedHabits,
+                                          onCardTapped:
+                                              _toggleCompletedHabitsCardVisibility,
+                                          getCardColor: getCardColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -509,62 +523,66 @@ class _CompletedHabitsCardState extends State<CompletedHabitsCard> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: widget.onCardTapped,
-      child: Container(
-        height: 125,
-        width: 380,
-        color: Colors.grey.shade200,
-        child: ListView.builder(
-          controller: _scrollController,
-          scrollDirection: Axis.vertical,
-          shrinkWrap: true,
-          itemCount: widget.completedHabits.length,
-          itemBuilder: (context, index) {
-            final completedHabit = widget.completedHabits[index];
-            return Slidable(
-              child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                color: getCardColor(completedHabit.habitType),
-                borderOnForeground: true,
-                elevation: 4.0,
-                shadowColor: const Color(0xff1855f4),
-                margin: const EdgeInsets.symmetric(
-                    horizontal: 17.0, vertical: 10.0),
-                child: Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ListTile(
-                        title: Center(
-                          child: Text(
-                            completedHabit.name,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                                fontSize: 20,
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        subtitle: Center(
-                          child: Text(
-                            completedHabit.description,
-                            style: const TextStyle(
-                              fontSize: 15,
+    double screenHeight = MediaQuery.of(context).size.height;
+    double cardHeight = screenHeight * 0.55;
+    return SingleChildScrollView(
+      child: GestureDetector(
+        onTap: widget.onCardTapped,
+        child: Container(
+          height: cardHeight,
+          color: Colors.grey.shade200,
+          child: ListView.builder(
+            physics: const BouncingScrollPhysics(),
+            controller: _scrollController,
+            scrollDirection: Axis.vertical,
+            shrinkWrap: true,
+            itemCount: widget.completedHabits.length,
+            itemBuilder: (context, index) {
+              final completedHabit = widget.completedHabits[index];
+              return Slidable(
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  color: getCardColor(completedHabit.habitType),
+                  borderOnForeground: true,
+                  elevation: 4.0,
+                  shadowColor: const Color(0xff1855f4),
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: 17.0, vertical: 10.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ListTile(
+                          title: Center(
+                            child: Text(
+                              completedHabit.name,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      )
-                    ],
+                          subtitle: Center(
+                            child: Text(
+                              completedHabit.description,
+                              style: const TextStyle(
+                                fontSize: 15,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -578,7 +596,7 @@ void _showHabitDetailsDialog(BuildContext context, Habit habit) {
       return AlertDialog(
         title: Text(
           '${habit.name}',
-          style: git const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
         ),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

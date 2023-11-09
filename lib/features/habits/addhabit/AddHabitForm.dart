@@ -255,6 +255,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     time: selectedTime!,
                     startDate: startDate!,
                     termDate: termDate!,
+                    notificationMessage: '',
                   );
                   habit.habitType = selectedHabitType;
                   //habit.sharedWith = selectedFriend;
