@@ -1,4 +1,5 @@
 import 'package:HabitShare/Constants.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:HabitShare/redux/AppState.dart';
@@ -21,21 +22,12 @@ class _HabitListState extends State<HabitList> {
   List<Habit> activeHabits = [];
   List<Habit> completedHabitsForToday = [];
   Map<DateTime, List<Habit>> habits = {};
-  double _completedHabitsCardPosition = 0;
-  bool _isCompletedHabitsCardVisible = false;
   bool isVisible = true;
 
-  void _toggleCompletedHabitsCardVisibility() {
-    setState(() {
-      _isCompletedHabitsCardVisible = !_isCompletedHabitsCardVisible;
-      _completedHabitsCardPosition = _isCompletedHabitsCardVisible ? 0 : -300;
-    });
-  }
+  int _currentSegment = 0; // Added to keep track of the selected segment
 
   @override
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
-
     // Initialize completedHabits list with habits completed for the current date
     completedHabits = activeHabits
         .where((habit) =>
@@ -51,11 +43,20 @@ class _HabitListState extends State<HabitList> {
           appBar: AppBar(
             automaticallyImplyLeading: false,
             backgroundColor: primaryColor,
-            title: const Center(
-              child: Text(
-                "Habit List",
-                style: appbarTextStyle,
-              ),
+            title: const Row(
+              children: [
+                CircleAvatar(
+                  backgroundImage: AssetImage('assets/profile_pic.jpg'),
+                  // Replace 'assets/profile_pic.jpg' with the path to the user's profile picture
+                  radius: 20,
+                ),
+                const SizedBox(width: 10),
+                // Add user name here (you can replace the placeholder with your logic)
+                Text(
+                  'User Name', // Replace 'User Name' with the actual user's name
+                  style: appbarTextStyle,
+                ),
+              ],
             ),
           ),
           body: SizedBox(
@@ -127,297 +128,310 @@ class _HabitListState extends State<HabitList> {
                     // Do something when the visible page changes
                   },
                 ),
-                Expanded(
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: SizedBox(
-                          height: 385, // Set the height of the first list
-                          child: ListView.builder(
-                            itemCount: habits.length,
-                            itemBuilder: (context, index) {
-                              final habit = habits[index];
-
-                              bool isVisible = false;
-                              if (habit.frequency == HabitFrequency.daily) {
-                                if (habit.termDate != null) {
-                                  final startDate =
-                                      DateTime.parse(habit.startDate);
-                                  final termDate =
-                                      DateTime.parse(habit.termDate);
-                                  isVisible = selectedDate.isAfter(startDate) &&
-                                      selectedDate.isBefore(termDate);
-                                } else {
-                                  isVisible =
-                                      true; // Display daily habits without start and term date restriction
-                                }
-                              } else if (habit.frequency ==
-                                      HabitFrequency.weekend &&
-                                  (selectedDate.weekday == DateTime.saturday ||
-                                      selectedDate.weekday ==
-                                          DateTime.sunday)) {
-                                if (habit.termDate != null) {
-                                  final startDate =
-                                      DateTime.parse(habit.startDate);
-                                  final termDate =
-                                      DateTime.parse(habit.termDate);
-                                  isVisible = selectedDate.isAfter(startDate) &&
-                                      selectedDate.isBefore(termDate);
-                                } else {
-                                  isVisible =
-                                      true; // Display weekend habits without start and term date restriction
-                                }
-                              } else if (habit.frequency ==
-                                  HabitFrequency.weekly) {
-                                final startDate =
-                                    DateTime.parse(habit.startDate);
-
-                                // Check if the selected date is in the next 7 days and is the same weekday as the habit's weekday
-                                final next7Days = List.generate(
-                                    7,
-                                    (index) => selectedDate
-                                        .add(Duration(days: index)));
-                                isVisible = next7Days.any((date) =>
-                                    isSameDay(date, selectedDate) &&
-                                    date.weekday == startDate.weekday);
-
-                                // Check if the selected date is before the habit's term date
-                                if (isVisible) {
-                                  final termDate =
-                                      DateTime.parse(habit.termDate);
-                                  isVisible = selectedDate.isBefore(termDate);
-                                }
-                              }
-                              if (isVisible) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    _showHabitDetailsDialog(context, habit);
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 15, right: 15, top: 2),
-                                    child: Card(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20)),
-                                      color: getCardColor(habit.habitType),
-                                      elevation: 4.0,
-                                      child: ListTile(
-                                        contentPadding:
-                                            const EdgeInsets.all(10.0),
-                                        leading: Padding(
-                                          padding:
-                                              const EdgeInsets.only(right: 1),
-                                          child: Radio(
-                                            value: habit,
-                                            groupValue:
-                                                completedHabits.contains(habit)
-                                                    ? habit
-                                                    : null,
-                                            onChanged: (selectedHabit) {
-                                              showDialog(
-                                                context: context,
-                                                builder: (BuildContext
-                                                    dialogContext) {
-                                                  return AlertDialog(
-                                                    title: const Text(
-                                                        'Confirm Habit Completion'),
-                                                    content: const Text(
-                                                        'Have you completed this habit?'),
-                                                    actions: <Widget>[
-                                                      TextButton(
-                                                        child: const Text(
-                                                            'Cancel'),
-                                                        onPressed: () {
-                                                          Navigator.of(
-                                                                  dialogContext)
-                                                              .pop(); // Close the dialog
-                                                        },
-                                                      ),
-                                                      TextButton(
-                                                        child:
-                                                            const Text('Yes'),
-                                                        onPressed: () {
-                                                          setState(() {
-                                                            if (completedHabits
-                                                                .contains(
-                                                                    selectedHabit)) {
-                                                              completedHabits
-                                                                  .remove(
-                                                                      selectedHabit);
-                                                              // Dispatch the action to remove the habit from completedHabits
-                                                              StoreProvider.of<
-                                                                          AppState>(
-                                                                      context)
-                                                                  .dispatch(
-                                                                RemoveCompletedHabitAction(
-                                                                    selectedHabit!
-                                                                        .name),
-                                                              );
-                                                            } else {
-                                                              completedHabits.add(
-                                                                  selectedHabit!);
-                                                              // Dispatch the action to add the habit to completedHabits
-                                                              StoreProvider.of<
-                                                                          AppState>(
-                                                                      context)
-                                                                  .dispatch(
-                                                                AddCompletedHabitAction(
-                                                                    selectedHabit),
-                                                              );
-                                                            }
-                                                          });
-                                                          Navigator.of(
-                                                                  dialogContext)
-                                                              .pop(); // Close the dialog
-                                                        },
-                                                      ),
-                                                    ],
-                                                  );
-                                                },
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                        title: Text(
-                                          habit.name.toUpperCase(),
-                                          style: const TextStyle(
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        subtitle: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              habit.description,
-                                              style: const TextStyle(
-                                                  fontSize: 13.0,
-                                                  fontWeight: FontWeight.bold),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 8.0),
-                                            Row(
-                                              children: [
-                                                const Text(
-                                                  'Streak: ',
-                                                  style: TextStyle(
-                                                      fontSize: 13.0,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                const Text(
-                                                  ' || ',
-                                                  style: TextStyle(
-                                                      fontSize: 13.0,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  'Frequency:  ${habit.frequency.toString().split('.').last}',
-                                                  style: const TextStyle(
-                                                      fontSize: 13.0,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                        trailing: IconButton(
-                                          onPressed: () {
-                                            _showDeleteConfirmationDialog(
-                                                context, habit);
-                                          },
-                                          icon: const Icon(Icons.delete),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              } else {
-                                return const SizedBox();
-                              }
-                            },
-                          ),
+                const SizedBox(
+                  height: 20,
+                ),
+                CupertinoSegmentedControl<int>(
+                  groupValue: _currentSegment,
+                  onValueChanged: (value) {
+                    setState(() {
+                      _currentSegment = value;
+                    });
+                  },
+                  children: {
+                    0: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 16),
+                      child: Text(
+                        'Habits',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: _currentSegment == 0
+                              ? Colors.white
+                              : Colors.black,
                         ),
                       ),
-                      SliverToBoxAdapter(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              ExpansionTile(
-                                title: const Text(
-                                  'Completed Habits',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: Text(
-                                      'Swipe up',
-                                      style: TextStyle(
-                                        fontSize: 16,
+                    ),
+                    1: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 16),
+                      child: Text(
+                        'Completed Habits',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: _currentSegment == 1
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                    ),
+                  },
+                  unselectedColor: Colors.grey[300],
+                  selectedColor: primaryColor, // Customize the selected color
+                  borderColor: primaryColor, // Customize the border color
+                  pressedColor: Colors.white, // Customize the pressed color
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Visibility(
+                  visible: _currentSegment == 0,
+                  child: Expanded(
+                    child: SizedBox(
+                      height: 385, // Set the height of the first list
+                      child: ListView.builder(
+                        itemCount: habits.length,
+                        itemBuilder: (context, index) {
+                          final habit = habits[index];
+
+                          bool isVisible = false;
+                          if (habit.frequency == HabitFrequency.daily) {
+                            if (habit.termDate != null) {
+                              final startDate = DateTime.parse(habit.startDate);
+                              final termDate = DateTime.parse(habit.termDate);
+                              isVisible = selectedDate.isAfter(startDate) &&
+                                  selectedDate.isBefore(termDate);
+                            } else {
+                              isVisible =
+                                  true; // Display daily habits without start and term date restriction
+                            }
+                          } else if (habit.frequency ==
+                                  HabitFrequency.weekend &&
+                              (selectedDate.weekday == DateTime.saturday ||
+                                  selectedDate.weekday == DateTime.sunday)) {
+                            if (habit.termDate != null) {
+                              final startDate = DateTime.parse(habit.startDate);
+                              final termDate = DateTime.parse(habit.termDate);
+                              isVisible = selectedDate.isAfter(startDate) &&
+                                  selectedDate.isBefore(termDate);
+                            } else {
+                              isVisible =
+                                  true; // Display weekend habits without start and term date restriction
+                            }
+                          } else if (habit.frequency == HabitFrequency.weekly) {
+                            final startDate = DateTime.parse(habit.startDate);
+
+                            // Check if the selected date is in the next 7 days and is the same weekday as the habit's weekday
+                            final next7Days = List.generate(
+                                7,
+                                (index) =>
+                                    selectedDate.add(Duration(days: index)));
+                            isVisible = next7Days.any((date) =>
+                                isSameDay(date, selectedDate) &&
+                                date.weekday == startDate.weekday);
+
+                            // Check if the selected date is before the habit's term date
+                            if (isVisible) {
+                              final termDate = DateTime.parse(habit.termDate);
+                              isVisible = selectedDate.isBefore(termDate);
+                            }
+                          }
+                          if (isVisible) {
+                            return GestureDetector(
+                              onTap: () {
+                                _showHabitDetailsDialog(context, habit);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 15, right: 15, top: 2),
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20)),
+                                  color: getCardColor(habit.habitType),
+                                  elevation: 4.0,
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.all(10.0),
+                                    leading: Padding(
+                                      padding: const EdgeInsets.only(right: 1),
+                                      child: Radio(
+                                        value: habit,
+                                        groupValue:
+                                            completedHabits.contains(habit)
+                                                ? habit
+                                                : null,
+                                        onChanged: (selectedHabit) {
+                                          showDialog(
+                                            context: context,
+                                            builder:
+                                                (BuildContext dialogContext) {
+                                              return AlertDialog(
+                                                title: const Text(
+                                                    'Confirm Habit Completion'),
+                                                content: const Text(
+                                                    'Have you completed this habit?'),
+                                                actions: <Widget>[
+                                                  TextButton(
+                                                    child: const Text('Cancel'),
+                                                    onPressed: () {
+                                                      Navigator.of(
+                                                              dialogContext)
+                                                          .pop(); // Close the dialog
+                                                    },
+                                                  ),
+                                                  TextButton(
+                                                    child: const Text('Yes'),
+                                                    onPressed: () {
+                                                      setState(() {
+                                                        if (completedHabits
+                                                            .contains(
+                                                                selectedHabit)) {
+                                                          completedHabits.remove(
+                                                              selectedHabit);
+                                                          // Dispatch the action to remove the habit from completedHabits
+                                                          StoreProvider.of<
+                                                                      AppState>(
+                                                                  context)
+                                                              .dispatch(
+                                                            RemoveCompletedHabitAction(
+                                                                selectedHabit!
+                                                                    .name),
+                                                          );
+                                                        } else {
+                                                          completedHabits.add(
+                                                              selectedHabit!);
+                                                          // Dispatch the action to add the habit to completedHabits
+                                                          StoreProvider.of<
+                                                                      AppState>(
+                                                                  context)
+                                                              .dispatch(
+                                                            AddCompletedHabitAction(
+                                                                selectedHabit),
+                                                          );
+                                                        }
+                                                      });
+                                                      Navigator.of(
+                                                              dialogContext)
+                                                          .pop(); // Close the dialog
+                                                    },
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    title: Text(
+                                      habit.name.toUpperCase(),
+                                      style: const TextStyle(
+                                        fontSize: 15.0,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ),
-                                  AnimatedPositioned(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut,
-                                    bottom: _completedHabitsCardPosition,
-                                    left: 0,
-                                    right: 0,
-                                    child: GestureDetector(
-                                      onVerticalDragUpdate: (details) {
-                                        if (details.primaryDelta != null) {
-                                          setState(() {
-                                            _completedHabitsCardPosition +=
-                                                details.primaryDelta!;
-                                            if (_completedHabitsCardPosition >
-                                                0) {
-                                              _completedHabitsCardPosition = 0;
-                                            } else if (_completedHabitsCardPosition <
-                                                -300) {
-                                              // Set the height of the completed habits card
-                                              _completedHabitsCardPosition =
-                                                  -300;
-                                            }
-                                          });
-                                        }
-                                      },
-                                      onVerticalDragEnd: (details) {
-                                        if (_completedHabitsCardPosition <
-                                            -150) {
-                                          // Set the threshold for card visibility
-                                          _toggleCompletedHabitsCardVisibility();
-                                        } else {
-                                          _toggleCompletedHabitsCardVisibility();
-                                        }
-                                      },
-                                      child: SingleChildScrollView(
-                                        child: CompletedHabitsCard(
-                                          completedHabits: completedHabits,
-                                          onCardTapped:
-                                              _toggleCompletedHabitsCardVisibility,
-                                          getCardColor: getCardColor,
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          habit.description,
+                                          style: const TextStyle(
+                                              fontSize: 13.0,
+                                              fontWeight: FontWeight.bold),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                      ),
+                                        const SizedBox(height: 8.0),
+                                        Row(
+                                          children: [
+                                            const Text(
+                                              'Streak: ',
+                                              style: TextStyle(
+                                                  fontSize: 13.0,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            const Text(
+                                              ' || ',
+                                              style: TextStyle(
+                                                  fontSize: 13.0,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'Frequency:  ${habit.frequency.toString().split('.').last}',
+                                              style: const TextStyle(
+                                                  fontSize: 13.0,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: IconButton(
+                                      onPressed: () {
+                                        _showDeleteConfirmationDialog(
+                                            context, habit);
+                                      },
+                                      icon: const Icon(Icons.delete),
                                     ),
                                   ),
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
+                                ),
+                              ),
+                            );
+                          } else {
+                            return const SizedBox();
+                          }
+                        },
                       ),
-                    ],
+                    ),
+                  ),
+                ),
+                Visibility(
+                  visible: _currentSegment == 1,
+                  child: Expanded(
+                    child: SizedBox(
+                      height: 385, // Set the height of the second list
+                      child: ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        //controller: _scrollController,
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true,
+                        itemCount: completedHabits.length,
+                        itemBuilder: (context, index) {
+                          final completedHabit = completedHabits[index];
+                          return Slidable(
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              color: getCardColor(completedHabit.habitType),
+                              borderOnForeground: true,
+                              elevation: 4.0,
+                              shadowColor: const Color(0xff1855f4),
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 17.0, vertical: 10.0),
+                              child: Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ListTile(
+                                      title: Center(
+                                        child: Text(
+                                          completedHabit.name,
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                              fontSize: 20,
+                                              color: Colors.red,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      subtitle: Center(
+                                        child: Text(
+                                          completedHabit.description,
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -497,96 +511,6 @@ void _showDeleteConfirmationDialog(BuildContext context, Habit habit) {
       );
     },
   );
-}
-
-class CompletedHabitsCard extends StatefulWidget {
-  final List<Habit> completedHabits;
-  final VoidCallback onCardTapped;
-  final Color Function(String?) getCardColor;
-
-  const CompletedHabitsCard({
-    super.key,
-    required this.completedHabits,
-    required this.onCardTapped,
-    required this.getCardColor,
-  });
-
-  @override
-  State<CompletedHabitsCard> createState() => _CompletedHabitsCardState();
-}
-
-class _CompletedHabitsCardState extends State<CompletedHabitsCard> {
-  final ScrollController _scrollController = ScrollController();
-  Color getCardColor(String? habitType) {
-    return widget.getCardColor(habitType);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
-    double cardHeight = screenHeight * 0.55;
-    return SingleChildScrollView(
-      child: GestureDetector(
-        onTap: widget.onCardTapped,
-        child: Container(
-          height: cardHeight,
-          color: Colors.grey.shade200,
-          child: ListView.builder(
-            physics: const BouncingScrollPhysics(),
-            controller: _scrollController,
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true,
-            itemCount: widget.completedHabits.length,
-            itemBuilder: (context, index) {
-              final completedHabit = widget.completedHabits[index];
-              return Slidable(
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  color: getCardColor(completedHabit.habitType),
-                  borderOnForeground: true,
-                  elevation: 4.0,
-                  shadowColor: const Color(0xff1855f4),
-                  margin: const EdgeInsets.symmetric(
-                      horizontal: 17.0, vertical: 10.0),
-                  child: Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ListTile(
-                          title: Center(
-                            child: Text(
-                              completedHabit.name,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          subtitle: Center(
-                            child: Text(
-                              completedHabit.description,
-                              style: const TextStyle(
-                                fontSize: 15,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 void _showHabitDetailsDialog(BuildContext context, Habit habit) {

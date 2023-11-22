@@ -6,6 +6,9 @@ import 'package:flutter_redux/flutter_redux.dart';
 import '../../../redux/AppState.dart';
 import '../models/Habit.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class AddHabitForm extends StatefulWidget {
   const AddHabitForm({Key? key}) : super(key: key);
@@ -24,6 +27,32 @@ class _AddHabitFormState extends State<AddHabitForm> {
   String? startDate;
   String? termDate;
   Map<String, dynamic>? selectedFriend;
+  TimeOfDay? selectedTimeOfDay;
+
+  Future<void> showTimePicker(BuildContext context) async {
+    TimeOfDay? pickedTime = await showRoundedTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      style: MaterialRoundedDatePickerStyle(
+        textStyleButtonPositive: const TextStyle(color: Colors.black),
+        textStyleButtonNegative: const TextStyle(color: Colors.black),
+        textStyleYearButton: const TextStyle(color: Colors.black),
+        textStyleDayHeader: const TextStyle(color: Colors.black),
+        textStyleDayOnCalendar: const TextStyle(color: Colors.black),
+        textStyleDayOnCalendarSelected: const TextStyle(color: Colors.white),
+        textStyleCurrentDayOnCalendar: const TextStyle(color: Colors.black),
+        textStyleDayOnCalendarDisabled: const TextStyle(color: Colors.grey),
+        textStyleMonthYearHeader: const TextStyle(color: Colors.black),
+      ),
+    );
+
+    if (pickedTime != null) {
+      setState(() {
+        selectedTimeOfDay = pickedTime;
+        selectedTime = HabitTime.custom; // Update your selectedTime accordingly
+      });
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     DateTime? pickedDate = await showDatePicker(
@@ -58,6 +87,43 @@ class _AddHabitFormState extends State<AddHabitForm> {
         termDate = DateFormat('yyyy-MM-dd').format(pickedDate);
       });
     }
+  }
+
+  Future<void> _scheduleNotification(
+      String habitName, DateTime notificationTime) async {
+    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+        FlutterLocalNotificationsPlugin();
+
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'your_channel_id',
+      'your_channel_name',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      0, // Notification ID
+      'Reminder for $habitName',
+      'It\'s time for your habit: $habitName!',
+      tz.TZDateTime.from(
+          notificationTime, tz.local), // Use the notification time
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'your_channel_id',
+          'your_channel_name',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+      ),
+      androidAllowWhileIdle: true,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      payload: 'customData',
+    );
   }
 
   @override
@@ -172,24 +238,21 @@ class _AddHabitFormState extends State<AddHabitForm> {
             const SizedBox(
               height: 20,
             ),
-            DropdownButtonFormField<HabitTime>(
-              value: selectedTime,
-              onChanged: (value) {
-                setState(() {
-                  selectedTime = value;
-                });
+            GestureDetector(
+              onTap: () {
+                showTimePicker(context);
               },
-              items: HabitTime.values.map((time) {
-                return DropdownMenuItem<HabitTime>(
-                  value: time,
-                  child: Text(time.toString().split('.').last),
-                );
-              }).toList(),
-              decoration: const InputDecoration(
-                labelText: 'Time',
-                labelStyle:
-                    TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
-                border: OutlineInputBorder(),
+              child: AbsorbPointer(
+                child: TextFormField(
+                  controller: TextEditingController(
+                      text: selectedTimeOfDay?.format(context) ?? ''),
+                  decoration: const InputDecoration(
+                    labelText: 'Time',
+                    labelStyle: TextStyle(
+                        color: primaryColor, fontWeight: FontWeight.bold),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
               ),
             ),
             const SizedBox(
@@ -252,16 +315,26 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     name: nameController.text,
                     description: descriptionController.text,
                     frequency: selectedFrequency!,
-                    time: selectedTime!,
+                    time: selectedTimeOfDay!,
                     startDate: startDate!,
                     termDate: termDate!,
                     notificationMessage: '',
                   );
                   habit.habitType = selectedHabitType;
                   //habit.sharedWith = selectedFriend;
+                  final notificationTime = DateTime(
+                      selectedDate!.year,
+                      selectedDate!.month,
+                      selectedDate!.day,
+                      selectedTimeOfDay!.hour - 1,
+                      selectedTimeOfDay!.minute);
+
                   StoreProvider.of<AppState>(context).dispatch(
-                    AddHabitAction(habit),
+                    AddHabitAction(
+                      habit,
+                    ),
                   );
+
                   nameController.clear();
                   descriptionController.clear();
                   setState(() {

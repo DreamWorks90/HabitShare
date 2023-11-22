@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/db/models/User.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUp extends StatefulWidget {
@@ -22,18 +24,12 @@ class _SignUpState extends State<SignUp> {
   UserService userService = UserService();
 
   Future<void> _onSaveCredentials(userName, userEmail, userPassword) async {
-    final name      = userName;
-    final email     = userEmail;
-    final password  = userPassword;
+    final name = userName;
+    final email = userEmail;
+    final password = userPassword;
 
     await userService
-        .insertUser(
-          User(
-            name: name,
-            email: email,
-            password: password
-          )
-        );
+        .insertUser(User(name: name, email: email, password: password));
   }
 
   String? _validateUsername(String? value) {
@@ -72,36 +68,50 @@ class _SignUpState extends State<SignUp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(
-          systemOverlayStyle:
-              const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
-          backgroundColor: primaryColor,
-          title: const Center(
-            child: Text('Signup', style: appbarTextStyle),
-          ),
-        ),
         body: SingleChildScrollView(
-          padding: EdgeInsets.only(top: 40),
+          padding: const EdgeInsets.only(top: 50),
           child: Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: Form(
               key: _formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
+                  SvgPicture.asset(
+                    'assets/images/newlogo.svg',
+                    height: 110,
+                  ),
+                  const SizedBox(height: 4.0),
+                  Text(
+                    'Signup to add your habits &',
+                    style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        color: darkblack,
+                        fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  Text(
+                    'share it with others',
+                    style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        color: darkblack,
+                        fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 17.0),
                   TextFormField(
                     controller: _usernameController,
                     decoration: const InputDecoration(
                       labelText: 'Full Name',
                       hintText: 'Enter your username',
-                      prefixIcon: Icon(Icons.person),
+                      prefixIcon: Icon(Icons.person, color: primaryColor),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.grey),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue),
+                        borderSide: BorderSide(color: primaryColor),
                       ),
                       errorBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.red),
@@ -118,13 +128,16 @@ class _SignUpState extends State<SignUp> {
                     decoration: const InputDecoration(
                       labelText: 'Email',
                       hintText: 'Enter your email',
-                      prefixIcon: Icon(Icons.mail),
+                      prefixIcon: Icon(
+                        Icons.mail,
+                        color: primaryColor,
+                      ),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.grey),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue),
+                        borderSide: BorderSide(color: primaryColor),
                       ),
                       errorBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.red),
@@ -142,13 +155,16 @@ class _SignUpState extends State<SignUp> {
                     decoration: const InputDecoration(
                       labelText: 'Password',
                       hintText: 'Enter your password',
-                      prefixIcon: Icon(Icons.remove_red_eye_sharp),
+                      prefixIcon: Icon(
+                        Icons.remove_red_eye_sharp,
+                        color: primaryColor,
+                      ),
                       border: OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.grey),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue),
+                        borderSide: BorderSide(color: primaryColor),
                       ),
                       errorBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.red),
@@ -164,10 +180,10 @@ class _SignUpState extends State<SignUp> {
                     style: ElevatedButton.styleFrom(
                       elevation: 5,
                       backgroundColor: primaryColor,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 20),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     onPressed: _performSignup,
@@ -175,6 +191,13 @@ class _SignUpState extends State<SignUp> {
                       'Sign Up',
                       style: buttonTextStyle,
                     ),
+                  ),
+                  SizedBox(
+                    height: 35,
+                  ),
+                  SvgPicture.asset(
+                    'assets/images/signinpic.svg',
+                    height: 200,
                   ),
                 ],
               ),
@@ -202,16 +225,18 @@ class _SignUpState extends State<SignUp> {
         context: context,
         builder: (BuildContext dialogContext) {
           return AlertDialog(
-            title: Text('Success'),
-            content: Text('Signup Successful!'),
+            title: const Text('Success'),
+            content: const Text('Signup Successful!'),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
                   Navigator.of(dialogContext).pop();
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => HabitStatus()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const HabitStatus()));
                 },
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           );

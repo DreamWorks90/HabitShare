@@ -1,4 +1,5 @@
 import 'package:HabitShare/features/authentication/AuthPage.dart';
+import 'package:HabitShare/features/authentication/SignIn.dart';
 import 'package:flutter/material.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -108,7 +109,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: const Text('Log Out'),
             onTap: () {
               Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const AuthPage()));
+                  MaterialPageRoute(builder: (context) => const SignIn()));
             },
           ),
           ListTile(

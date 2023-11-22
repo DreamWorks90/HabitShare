@@ -1,11 +1,16 @@
-import 'package:HabitShare/Constants.dart';
-import 'package:HabitShare/features/friends/addfriends/LinkShare.dart';
-import 'package:HabitShare/features/friends/addfriends/QRCode.dart';
-import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter/material.dart';
+import 'package:HabitShare/Constants.dart';
+import 'package:HabitShare/features/friends/addfriends/contact.dart';
+import 'package:contacts_service/contacts_service.dart';
+import 'package:flutter_share/flutter_share.dart';
 
 class FriendsTab extends StatefulWidget {
-  const FriendsTab({super.key});
+  final List<Contact> selectedFriends;
+
+  const FriendsTab({
+    Key? key,
+    required this.selectedFriends,
+  }) : super(key: key);
 
   @override
   State<FriendsTab> createState() => _FriendsTabState();
@@ -23,88 +28,119 @@ class _FriendsTabState extends State<FriendsTab> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Contact> selectedFriends = widget.selectedFriends;
     return Scaffold(
-      appBar: isPopoverVisible
-          ? AppBar(
-              automaticallyImplyLeading: false,
-              backgroundColor: primaryColor,
-              title: const Center(
-                  child: Text("Add Friends", style: appbarTextStyle)),
-            )
-          : AppBar(
-              automaticallyImplyLeading: false,
-              backgroundColor: primaryColor,
-              actions: <Widget>[
-                IconButton(
-                  icon: const Icon(Icons.person),
-                  onPressed: togglePopover,
-                ),
-              ],
-              title: const Center(
-                child: Text("Friends", style: appbarTextStyle),
-              ),
-            ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            // Conditionally show the popover
-            if (isPopoverVisible)
-              Container(
-                //height: 700,
-                //width: 350,
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const QRCode()));
-                      },
-                      child: const Text("QR Code", style: buttonTextStyle),
-                      style: ElevatedButton.styleFrom(
-                        elevation: 5,
-                        backgroundColor: primaryColor,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 30.0),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        elevation: 5,
-                        backgroundColor: primaryColor,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const LinkShare()));
-                      },
-                      child: const Text(
-                        "Via Link Share",
-                        style: buttonTextStyle,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
+      appBar: AppBar(
+        backgroundColor: primaryColor,
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: togglePopover,
+          ),
+        ],
+        title: const Center(
+          child: Text("Friends", style: appbarTextStyle),
         ),
       ),
+      body: isPopoverVisible
+          ? Stack(
+              children: [
+                Positioned(
+                  right: 10,
+                  top: 10,
+                  child: IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: togglePopover,
+                  ),
+                ),
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              height: 170,
+                              width: 200,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 5,
+                                  backgroundColor: primaryColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ContactPage(),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  "Via Contact",
+                                  style: buttonTextStyle,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20.0),
+                            Container(
+                              height: 170,
+                              width: 200,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 5,
+                                  backgroundColor: primaryColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                                onPressed: shareContent,
+                                child: const Text(
+                                  "via Link Share",
+                                  style: buttonTextStyle,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : ListView.builder(
+              itemCount: selectedFriends.length,
+              itemBuilder: (context, index) {
+                Contact friend = selectedFriends[index];
+                return ListTile(
+                  title: Text(friend.displayName ?? ''),
+                  subtitle: Text(
+                    friend.phones?.isNotEmpty == true
+                        ? friend.phones!.first.value ?? ''
+                        : '',
+                  ),
+                );
+              },
+            ),
     );
+  }
+}
+
+void shareContent() async {
+  try {
+    await FlutterShare.share(
+      title: 'Share Content',
+      text: 'Check out this link:',
+      linkUrl: 'https://example.com',
+    );
+  } catch (e) {
+    print('Error sharing: $e');
   }
 }

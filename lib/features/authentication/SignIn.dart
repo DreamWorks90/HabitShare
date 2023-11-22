@@ -5,7 +5,9 @@ import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/db/services/UserService.dart';
 import 'package:HabitShare/features/Authentication/ResetPassword.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -19,6 +21,7 @@ class _SignInState extends State<SignIn> {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
@@ -47,27 +50,21 @@ class _SignInState extends State<SignIn> {
         navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         home: Scaffold(
-          appBar: AppBar(
-            systemOverlayStyle:
-                const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
-            backgroundColor: primaryColor,
-            title: const Center(
-              child: Text(
-                'SignIn',
-                style: appbarTextStyle,
-              ),
-            ),
-          ),
           body: SingleChildScrollView(
-            padding: EdgeInsets.only(top: 40),
+            padding: const EdgeInsets.only(top: 80),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20.0),
               child: Form(
                 key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
+                    SvgPicture.asset(
+                      'assets/images/newlogo.svg',
+                      height: 100,
+                    ),
+                    const SizedBox(height: 16.0),
                     TextFormField(
                       controller: _emailController,
                       decoration: const InputDecoration(
@@ -114,15 +111,31 @@ class _SignInState extends State<SignIn> {
                       ),
                       validator: _validatePassword,
                     ),
-                    const SizedBox(height: 40.0),
+                    const SizedBox(height: 10.0),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const ResetPassword()));
+                      },
+                      style: const ButtonStyle(
+                        alignment: Alignment.centerRight,
+                      ),
+                      child: const Text(
+                        'Forgot Password?',
+                        style: TextStyle(fontSize: 18, color: primaryColor),
+                      ),
+                    ),
+                    const SizedBox(height: 20.0),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         elevation: 5,
                         backgroundColor: primaryColor,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 10),
+                            horizontal: 35, vertical: 20),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       onPressed: () {
@@ -133,22 +146,79 @@ class _SignInState extends State<SignIn> {
                       },
                       child: const Text('Sign In', style: buttonTextStyle),
                     ),
-                    SizedBox(height: 30.0),
-                    TextButton(
+                    const SizedBox(height: 30.0),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Or',
+                          style: TextStyle(fontSize: 15),
+                        ),
+                        SizedBox(
+                          width: 5,
+                        ),
+                        Text(
+                          'Continue with',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            // Handle Google sign-in logic here
+                          },
+                          child: SvgPicture.asset(
+                            'assets/images/google.svg',
+                            height: 40,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 25,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            // Handle Facebook sign-in logic here
+                          },
+                          child: SvgPicture.asset(
+                            'assets/images/fb.svg',
+                            height: 40,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 18,
+                    ),
+                    const Text(
+                      'Dont have an account',
+                      style: TextStyle(fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(
+                      height: 18,
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 35, vertical: 20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: const BorderSide(color: primaryColor),
+                        ),
+                      ),
                       onPressed: () {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => ResetPassword()));
+                                builder: (context) => const SignUp()));
                       },
-                      child: const Text('Forgot Password?'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => SignUp()));
-                      },
-                      child: const Text('New User'),
+                      child: const Text('Sign up',
+                          style: TextStyle(color: primaryColor, fontSize: 18)),
                     ),
                   ],
                 ),
@@ -165,7 +235,7 @@ class _SignInState extends State<SignIn> {
     final storedPassword = prefs.getString('password');
     if (enteredEmail == storedEmail && enteredPassword == storedPassword) {
       navigatorKey.currentState?.pushReplacement(
-        MaterialPageRoute(builder: (context) => HabitStatus()),
+        MaterialPageRoute(builder: (context) => const HabitStatus()),
       );
     } else {
       showSignInFailedDialog();

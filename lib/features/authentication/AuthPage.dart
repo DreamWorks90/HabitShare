@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 import 'package:HabitShare/features/authentication/SignIn.dart';
 import 'package:HabitShare/features/authentication/SignUp.dart';
 import 'package:HabitShare/Constants.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -20,8 +21,8 @@ class _AuthPageState extends State<AuthPage> {
             child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              'assets/images/logo.png',
+            SvgPicture.asset(
+              'assets/images/newlogo.svg',
               height: 200,
             ),
           ],
@@ -73,3 +74,4 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 }
+*/

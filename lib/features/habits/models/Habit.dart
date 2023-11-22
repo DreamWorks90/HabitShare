@@ -1,21 +1,18 @@
+import 'package:flutter/material.dart';
+
 enum HabitFrequency {
   daily,
   weekly,
   weekend,
 }
 
-enum HabitTime {
-  morning,
-  afternoon,
-  evening,
-  night,
-}
+enum HabitTime { morning, afternoon, evening, night, custom }
 
 class Habit {
   final String name;
   final String description;
   final HabitFrequency frequency;
-  final HabitTime time;
+  final TimeOfDay time;
   String? habitType;
   final String notificationMessage;
   final String startDate; // Assuming date is stored as a String in your class
