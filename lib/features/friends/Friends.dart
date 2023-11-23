@@ -3,6 +3,7 @@ import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/friends/addfriends/contact.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter_share/flutter_share.dart';
+import 'package:flutter_svg/svg.dart';
 
 class FriendsTab extends StatefulWidget {
   final List<Contact> selectedFriends;
@@ -34,13 +35,15 @@ class _FriendsTabState extends State<FriendsTab> {
         backgroundColor: primaryColor,
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.person),
+            icon: const Icon(Icons.group_add),
+            iconSize: 25,
             onPressed: togglePopover,
           ),
         ],
-        title: const Center(
-          child: Text("Friends", style: appbarTextStyle),
+        leading: SvgPicture.asset(
+          'assets/images/person.svg',
         ),
+        title: Text("Friends", style: appbarTextStyle),
       ),
       body: isPopoverVisible
           ? Stack(
@@ -63,7 +66,7 @@ class _FriendsTabState extends State<FriendsTab> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
+                            SizedBox(
                               height: 170,
                               width: 200,
                               child: ElevatedButton(
@@ -89,7 +92,7 @@ class _FriendsTabState extends State<FriendsTab> {
                               ),
                             ),
                             const SizedBox(height: 20.0),
-                            Container(
+                            SizedBox(
                               height: 170,
                               width: 200,
                               child: ElevatedButton(
