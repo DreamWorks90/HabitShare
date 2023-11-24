@@ -48,7 +48,6 @@ dependencies:
   flutter_timeline_calendar: ^1.0.9
   table_calendar: ^3.0.9
   calendar_timeline: ^1.1.2
-  slivers: ^0.0.1+2
   qr_flutter: ^4.1.0
   flutter_barcode_scanner: ^2.0.0
   sliver_tools: ^0.2.12
@@ -56,6 +55,7 @@ dependencies:
   flutter_rounded_date_picker: ^3.0.4
   flutter_share: ^2.0.0
   http: ^1.1.0
+  image_picker: ^1.0.4
 
 
 
@@ -76,6 +76,7 @@ dependencies:
   google_fonts: ^6.1.0
   curved_navigation_bar: ^1.0.3
   tuple: ^2.0.2
+  provider: ^6.1.1
 
 
 

@@ -40,9 +40,6 @@ class _FriendsTabState extends State<FriendsTab> {
             onPressed: togglePopover,
           ),
         ],
-        leading: SvgPicture.asset(
-          'assets/images/person.svg',
-        ),
         title: Text("Friends", style: appbarTextStyle),
       ),
       body: isPopoverVisible

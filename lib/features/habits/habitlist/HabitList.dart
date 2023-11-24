@@ -6,10 +6,13 @@ import 'package:HabitShare/redux/AppState.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:redux/redux.dart';
 import 'package:HabitShare/features/habits/addhabit/AddHabitForm.dart';
 import 'package:HabitShare/features/habits/models/Habit.dart';
 import 'package:table_calendar/table_calendar.dart';
+
+import '../../../userprovider.dart';
 
 class HabitList extends StatefulWidget {
   const HabitList({Key? key});
@@ -333,97 +336,132 @@ class _HabitListState extends State<HabitList> {
                                           padding: const EdgeInsets.only(
                                               right: 10, top: 2),
                                           child: Card(
-                                              color:
-                                                  getCardColor(habit.habitType),
-                                              elevation: 4.0,
-                                              child: Container(
-                                                height: 95,
-                                                width: 310,
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    left: BorderSide(
-                                                      width: 4,
-                                                      color: getBorderColor(
-                                                          habit.habitType),
-                                                    ),
+                                            color:
+                                                getCardColor(habit.habitType),
+                                            elevation: 4.0,
+                                            child: Container(
+                                              height: 95,
+                                              width: 310,
+                                              decoration: BoxDecoration(
+                                                border: Border(
+                                                  left: BorderSide(
+                                                    width: 4,
+                                                    color: getBorderColor(
+                                                        habit.habitType),
                                                   ),
                                                 ),
-                                                child: ListTile(
-                                                  contentPadding:
-                                                      const EdgeInsets.all(
-                                                          10.0),
-                                                  title: Text(
-                                                    habit.name.toUpperCase(),
-                                                    style: const TextStyle(
-                                                      fontSize: 15.0,
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                              ),
+                                              child: ListTile(
+                                                contentPadding:
+                                                    const EdgeInsets.all(10.0),
+                                                title: Text(
+                                                  habit.name.toUpperCase(),
+                                                  style: const TextStyle(
+                                                    fontSize: 15.0,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                subtitle: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      habit.description,
+                                                      style: const TextStyle(
+                                                        fontSize: 13.0,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                     ),
-                                                  ),
-                                                  subtitle: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        habit.description,
-                                                        style: const TextStyle(
-                                                            fontSize: 13.0,
+                                                    const SizedBox(height: 8.0),
+                                                    Row(
+                                                      children: [
+                                                        SvgPicture.asset(
+                                                          'assets/images/streak.svg',
+                                                          height: 20,
+                                                        ),
+                                                        SizedBox(
+                                                          width: 5,
+                                                        ),
+                                                        const Text(
+                                                          'Streak',
+                                                          style: TextStyle(
+                                                            fontSize: 15,
                                                             fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      ),
-                                                      const SizedBox(
-                                                          height: 8.0),
-                                                      Row(
-                                                        children: [
-                                                          SvgPicture.asset(
-                                                            'assets/images/streak.svg',
-                                                            height: 20,
+                                                                FontWeight.bold,
                                                           ),
-                                                          SizedBox(
-                                                            width: 5,
+                                                        ),
+                                                        SizedBox(
+                                                          width: 15,
+                                                        ),
+                                                        SvgPicture.asset(
+                                                          'assets/images/calendar.svg',
+                                                          height: 20,
+                                                        ),
+                                                        Text(
+                                                          '  ${habit.frequency.toString().split('.').last}',
+                                                          style:
+                                                              const TextStyle(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight.bold,
                                                           ),
-                                                          const Text(
-                                                            'Streak',
-                                                            style: TextStyle(
-                                                                fontSize: 15,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                          SizedBox(
-                                                            width: 15,
-                                                          ),
-                                                          SvgPicture.asset(
-                                                            'assets/images/calendar.svg',
-                                                            height: 20,
-                                                          ),
-                                                          Text(
-                                                            '  ${habit.frequency.toString().split('.').last}',
-                                                            style: const TextStyle(
-                                                                fontSize: 15,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  trailing: IconButton(
-                                                    onPressed: () {
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                                trailing:
+                                                    PopupMenuButton<String>(
+                                                  onSelected: (value) {
+                                                    // Handle the selected option
+                                                    if (value == 'delete') {
                                                       _showDeleteConfirmationDialog(
                                                           context, habit);
-                                                    },
-                                                    icon: const Icon(
-                                                        Icons.delete),
-                                                  ),
+                                                    } else if (value ==
+                                                        'edit') {
+                                                      // Implement edit functionality
+                                                    } else if (value ==
+                                                        'shareFriends') {
+                                                      // Implement share with friends functionality
+                                                    }
+                                                  },
+                                                  itemBuilder: (BuildContext
+                                                          context) =>
+                                                      <PopupMenuEntry<String>>[
+                                                    const PopupMenuItem<String>(
+                                                      value: 'edit',
+                                                      child: ListTile(
+                                                        leading:
+                                                            Icon(Icons.edit),
+                                                        title: Text('Edit'),
+                                                      ),
+                                                    ),
+                                                    const PopupMenuItem<String>(
+                                                      value: 'delete',
+                                                      child: ListTile(
+                                                        leading:
+                                                            Icon(Icons.delete),
+                                                        title: Text('Delete'),
+                                                      ),
+                                                    ),
+                                                    const PopupMenuItem<String>(
+                                                      value: 'shareFriends',
+                                                      child: ListTile(
+                                                        leading:
+                                                            Icon(Icons.share),
+                                                        title: Text(
+                                                            'Share with Friends'),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
-                                              )),
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -540,6 +578,15 @@ class _HabitListState extends State<HabitList> {
       return Colors.red;
     }
     return Colors.blue; // Default color
+  }
+
+  Color getColorForHabitType(String? habitType) {
+    if (habitType == 'Build') {
+      return Colors.green;
+    } else if (habitType == 'Quit') {
+      return Colors.red;
+    }
+    return Colors.black; // Default color
   }
 }
 
