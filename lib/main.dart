@@ -1,3 +1,4 @@
+import 'package:HabitShare/features/splash/SplashPage.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';

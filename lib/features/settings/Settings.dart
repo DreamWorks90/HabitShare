@@ -1,26 +1,28 @@
+import 'package:HabitShare/features/settings/profile.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
 import '../../Constants.dart';
-import '../../userprovider.dart';
 
 class SettingsPage extends StatefulWidget {
+  const SettingsPage({Key? key}) : super(key: key);
+
   @override
   _SettingsPageState createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  String username = 'Username'; // Initialize with the user's username
-  File? _imageFile;
+  String username = 'Username';
+  File? _originalImageFile;
+  File? _editedImageFile;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
-        backgroundColor: primaryColor,
+        title: const Text('Settings'),
+        backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -32,50 +34,35 @@ class _SettingsPageState extends State<SettingsPage> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CircleAvatar(
-                    radius: 40.0,
-                    backgroundImage: AssetImage(
-                        'assets/images/profile_pic.jpg'), // Replace with your image
-                  ),
-                  SizedBox(width: 16.0),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        username,
-                        style: TextStyle(
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          // Implement edit profile functionality
-                          _showEditProfileDialog();
-                        },
-                        child: Text(
-                          'Edit Profile',
-                          style: TextStyle(
-                            color: primaryColor,
-                            fontSize: 16.0,
+                  _buildCircularProfilePicture(),
+                  const SizedBox(width: 16.0),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          username,
+                          style: const TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
 
               // Settings Options
-              Text(
+              const Text(
                 'Settings',
                 style: TextStyle(
                   fontSize: 20.0,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Divider(thickness: 2.0),
+              const Divider(thickness: 2.0),
               Column(
                 children: settingsOptions.map((option) {
                   return _buildSettingButton(option);
@@ -88,37 +75,33 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showEditProfileDialog() {
-    // Implement the edit profile dialog
-    // For simplicity, we'll just update the username in this example
+  Widget _buildCircularProfilePicture() {
+    return GestureDetector(
+      onTap: () {
+        _showImagePreview();
+      },
+      child: CircleAvatar(
+        radius: 40.0,
+        backgroundImage: _editedImageFile != null
+            ? FileImage(_editedImageFile!)
+            : _originalImageFile != null
+                ? FileImage(_originalImageFile!)
+                : const AssetImage('assets/images/profile_pic.jpg')
+                    as ImageProvider<Object>?,
+      ),
+    );
+  }
+
+  void _showImagePreview() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Edit Profile'),
-          content: TextField(
-            decoration: InputDecoration(labelText: 'Enter new username'),
-            onChanged: (value) {
-              setState(() {
-                username = value;
-              });
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                // Save the new username or perform other edit profile actions
-                Navigator.of(context).pop();
-              },
-              child: Text('Save'),
-            ),
-          ],
+          content: _editedImageFile != null
+              ? Image.file(_editedImageFile!)
+              : _originalImageFile != null
+                  ? Image.file(_originalImageFile!)
+                  : Image.asset('assets/images/profile_pic.jpg'),
         );
       },
     );
@@ -127,41 +110,47 @@ class _SettingsPageState extends State<SettingsPage> {
   void _navigateToPage(String settingOption) {
     // Handle navigation based on the selected setting option
     switch (settingOption) {
+      case 'Profile':
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const ProfilePage()));
+        break;
       case 'Privacy':
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => PrivacyPage()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const PrivacyPage()));
         break;
       case 'Feedback':
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => FeedbackPage()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const FeedbackPage()));
         break;
       case 'Notification':
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => NotificationPage()));
+            MaterialPageRoute(builder: (context) => const NotificationPage()));
         break;
       case 'Rate Us':
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => RateUsPage()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const RateUsPage()));
         break;
       case 'Share App':
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => ShareAppPage()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const ShareAppPage()));
         break;
       case 'Review and Support':
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => ReviewSupportPage()));
+            MaterialPageRoute(builder: (context) => const ReviewSupportPage()));
         break;
       case 'Contact Us':
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => ContactUsPage()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const ContactUsPage()));
         break;
       case 'Log Out':
         // Implement log out functionality
         break;
       default:
         // Handle default case or navigate to a generic settings page
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => GenericSettingsPage()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const GenericSettingsPage()));
     }
   }
 
@@ -174,15 +163,15 @@ class _SettingsPageState extends State<SettingsPage> {
           _navigateToPage(settingOption);
         },
         style: TextButton.styleFrom(
-          primary: primaryColor, // Set the text color to green
+          foregroundColor: primaryColor, // Set the text color to green
         ),
         child: Row(
           children: [
             _buildCustomIcon(settingOption),
-            SizedBox(width: 8.0),
+            const SizedBox(width: 8.0),
             Text(
               settingOption,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16.0,
               ),
             ),
@@ -198,6 +187,9 @@ class _SettingsPageState extends State<SettingsPage> {
     Color iconColor = Colors.black; // Default color
 
     switch (settingOption) {
+      case 'Profile':
+        icon = Icons.person;
+        break;
       case 'Privacy':
         icon = Icons.lock;
         break;
@@ -234,6 +226,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   final List<String> settingsOptions = [
+    'Profile',
     'Privacy',
     'Feedback',
     'Notification',
@@ -246,13 +239,15 @@ class _SettingsPageState extends State<SettingsPage> {
 }
 
 class PrivacyPage extends StatelessWidget {
+  const PrivacyPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Privacy Settings'),
+        title: const Text('Privacy Settings'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('Privacy Settings Page'),
       ),
     );
@@ -260,13 +255,15 @@ class PrivacyPage extends StatelessWidget {
 }
 
 class FeedbackPage extends StatelessWidget {
+  const FeedbackPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Feedback'),
+        title: const Text('Feedback'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('Feedback Page'),
       ),
     );
@@ -274,13 +271,15 @@ class FeedbackPage extends StatelessWidget {
 }
 
 class NotificationPage extends StatelessWidget {
+  const NotificationPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notification Settings'),
+        title: const Text('Notification Settings'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('Notification Settings Page'),
       ),
     );
@@ -288,13 +287,15 @@ class NotificationPage extends StatelessWidget {
 }
 
 class RateUsPage extends StatelessWidget {
+  const RateUsPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Rate Us'),
+        title: const Text('Rate Us'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('Rate Us Page'),
       ),
     );
@@ -302,13 +303,15 @@ class RateUsPage extends StatelessWidget {
 }
 
 class ShareAppPage extends StatelessWidget {
+  const ShareAppPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Share App'),
+        title: const Text('Share App'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('Share App Page'),
       ),
     );
@@ -316,13 +319,15 @@ class ShareAppPage extends StatelessWidget {
 }
 
 class ReviewSupportPage extends StatelessWidget {
+  const ReviewSupportPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Review and Support'),
+        title: const Text('Review and Support'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('Review and Support Page'),
       ),
     );
@@ -330,13 +335,15 @@ class ReviewSupportPage extends StatelessWidget {
 }
 
 class ContactUsPage extends StatelessWidget {
+  const ContactUsPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Contact Us'),
+        title: const Text('Contact Us'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('Contact Us Page'),
       ),
     );
@@ -344,13 +351,15 @@ class ContactUsPage extends StatelessWidget {
 }
 
 class GenericSettingsPage extends StatelessWidget {
+  const GenericSettingsPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings Page'),
+        title: const Text('Settings Page'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('Generic Settings Page'),
       ),
     );
