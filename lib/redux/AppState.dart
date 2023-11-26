@@ -5,10 +5,12 @@ class AppState {
   final List<Habit> habits;
   final List<Habit> completedHabits;
   List<Habit> events;
-  AppState(
-      {required this.habits,
-      required this.completedHabits,
-      required this.events});
+
+  AppState({
+    required this.habits,
+    required this.completedHabits,
+    required this.events,
+  });
 }
 
 final List<Habit> initialHabits = [];

@@ -1,11 +1,11 @@
+import 'package:HabitShare/features/splash/SplashPage.dart';
+import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-
-import 'package:HabitShare/features/splash/SplashPage.dart';
 import 'package:HabitShare/redux/AppState.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -29,8 +29,8 @@ class HabitTrackerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: const SplashPage(),
+    return const Scaffold(
+      body: HabitStatus(),
     );
   }
 }
