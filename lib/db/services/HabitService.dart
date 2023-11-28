@@ -17,6 +17,8 @@ class HabitService {
       habit.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+
+    print("This is the added habit $habit_id");
   }
 
   Future<List<Map<String, Object?>>> retrieveHabitsOfUser(User user) async {

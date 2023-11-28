@@ -64,13 +64,13 @@ class DBHelper {
 	      name varchar NOT NULL,
 	      type int NOT NULL,
 	      frequency int NOT NULL,
-	      time int NOT NULL,
+	      time varchar NOT NULL,
 	      description TEXT,
-	      start_date TIMESTAMP,
-	      end_date TIMESTAMP,
+	      start_date varchar NOT NULL,
+	      end_date varchar,
 	      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	      user_id integer NOT NULL,
-	      friend_id integer NOT NULL,	      
+	      friend_id integer,	      
 	      FOREIGN KEY (user_id) REFERENCES users (user_id),
 	      FOREIGN KEY (friend_id) REFERENCES friends (friend_id)
       );''';
