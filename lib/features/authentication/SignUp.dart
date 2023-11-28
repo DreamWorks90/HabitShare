@@ -29,7 +29,7 @@ class _SignUpState extends State<SignUp> {
     final password = userPassword;
 
     await userService
-        .insertUser(User(name: name, email: email, password: password));
+        .insertUser(User(name: name, email: email, password: password, logged_in: 1));
   }
 
   String? _validateUsername(String? value) {

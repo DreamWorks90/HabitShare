@@ -4,10 +4,14 @@ import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import '../../../redux/AppState.dart';
-import '../models/Habit.dart';
+import '../models/HabitModel.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:HabitShare/db/services/HabitService.dart';
+import 'package:HabitShare/db/services/UserService.dart';
+import 'package:HabitShare/db/models/Habit.dart';
+import 'package:HabitShare/db/models/User.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 class AddHabitForm extends StatefulWidget {
@@ -28,6 +32,36 @@ class _AddHabitFormState extends State<AddHabitForm> {
   String? termDate;
   Map<String, dynamic>? selectedFriend;
   TimeOfDay? selectedTimeOfDay;
+
+  HabitService habitService = HabitService();
+  UserService userService = UserService();
+
+  Future<void> _onSaveHabit(
+    String name,
+    int type,
+    int frequency,
+    String description,
+    String startDate,
+    String time
+  ) async {
+
+    List<Map<String, Object?>> users = await userService.retrieveLoggedInUser();
+    Map<String, Object?> userResult = users.first;
+    User loggedInUser = User.fromMap(userResult);
+
+    Habit habit = Habit(
+      name: name,
+      type: 0,
+      frequency: frequency,
+      description: description,
+      time: time,
+      start_date: startDate,
+      user_id: loggedInUser.user_id!
+    );
+
+    await habitService
+        .insertHabit(habit);
+  }
 
   Future<void> showTimePicker(BuildContext context) async {
     TimeOfDay? pickedTime = await showRoundedTimePicker(
@@ -311,7 +345,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     selectedHabitType != null &&
                     startDate != null &&
                     termDate != null) {
-                  final habit = Habit(
+                  final habitModel = HabitModel(
                     name: nameController.text,
                     description: descriptionController.text,
                     frequency: selectedFrequency!,
@@ -320,7 +354,8 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     termDate: termDate!,
                     notificationMessage: '',
                   );
-                  habit.habitType = selectedHabitType;
+
+                  habitModel.habitType = selectedHabitType;
                   //habit.sharedWith = selectedFriend;
                   final notificationTime = DateTime(
                       selectedDate!.year,
@@ -331,8 +366,22 @@ class _AddHabitFormState extends State<AddHabitForm> {
 
                   StoreProvider.of<AppState>(context).dispatch(
                     AddHabitAction(
-                      habit,
+                      habitModel,
                     ),
+                  );
+
+                  DateTime? tempStartDate  = DateTime.tryParse(startDate!);
+                  var formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+                  String formattedStartDate = formatter.format(tempStartDate!);
+                  String formattedTime = formatter.format(notificationTime!);
+
+                  _onSaveHabit(
+                    nameController.text,
+                    0,
+                    selectedFrequency!.index,
+                    descriptionController.text,
+                    formattedTime,
+                    formattedStartDate
                   );
 
                   nameController.clear();

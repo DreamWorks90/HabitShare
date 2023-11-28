@@ -4,12 +4,14 @@ class User {
   final String name;
   final String email;
   final String password;
+  final int logged_in;
 
   User({
     this.user_id,
     required this.name,
     required this.email,
-    required this.password
+    required this.password,
+    required this.logged_in
   });
 
   Map<String, dynamic> toMap() {
@@ -17,7 +19,8 @@ class User {
       'user_id' : user_id,
       'name' : name,
       'email' : email,
-      'password' : password
+      'password' : password,
+      'logged_in' : logged_in
     };
   }
 
@@ -26,7 +29,8 @@ class User {
       user_id: map['user_id']?.toInt() ?? 0,
       name: map['name'] ?? '',
       email: map['email'] ?? '',
-      password: map['password'] ?? ''
+      password: map['password'] ?? '',
+      logged_in: map['logged_in'] ?? 0
     );
   }
 

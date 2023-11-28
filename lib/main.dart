@@ -30,7 +30,7 @@ class HabitTrackerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: HabitStatus(),
+      body: const SplashPage(),
     );
   }
 }

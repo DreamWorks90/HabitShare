@@ -5,10 +5,11 @@ class Habit {
   final int type;
   final int frequency;
   final String? description;
-  final DateTime start_date;
-  final DateTime? end_date;
+  final String time;
+  final String start_date;
+  final String? end_date;
   final int user_id;
-  final int friend_id;
+  final int? friend_id;
 
   Habit({
     this.habit_id,
@@ -16,10 +17,11 @@ class Habit {
     required this.type,
     required this.frequency,
     this.description,
+    required this.time,
     required this.start_date,
     this.end_date,
     required this.user_id,
-    required this.friend_id
+    this.friend_id
   });
 
   Map<String, dynamic> toMap() {
@@ -29,6 +31,7 @@ class Habit {
       'type' : type,
       'frequency' : frequency,
       'description' : description,
+      'time' : time,
       'start_date' : start_date,
       'end_date' : end_date,
       'user_id' : user_id,
@@ -43,6 +46,7 @@ class Habit {
       type: map['type'] ?? '',
       frequency: map['frequency'] ?? '',
       description: map['description'] ?? '',
+      time: map['time'] ?? '',
       start_date: map['start_date'] ?? '',
       end_date: map['end_date'] ?? '',
       user_id: map['user_id'] ?? '',

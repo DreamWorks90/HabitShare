@@ -9,7 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:redux/redux.dart';
 import 'package:HabitShare/features/habits/addhabit/AddHabitForm.dart';
-import 'package:HabitShare/features/habits/models/Habit.dart';
+import 'package:HabitShare/features/habits/models/HabitModel.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../../userprovider.dart';
@@ -23,11 +23,11 @@ class HabitList extends StatefulWidget {
 
 class _HabitListState extends State<HabitList> {
   DateTime selectedDate = DateTime.now();
-  List<Habit> completedHabits = [];
-  List<Habit> activeHabits = [];
-  List<Habit> completedHabitsForToday = [];
+  List<HabitModel> completedHabits = [];
+  List<HabitModel> activeHabits = [];
+  List<HabitModel> completedHabitsForToday = [];
 
-  Map<DateTime, List<Habit>> habits = {};
+  Map<DateTime, List<HabitModel>> habits = {};
   bool isVisible = true;
 
   int _currentSegment = 0; // Added to keep track of the selected segment
@@ -41,9 +41,9 @@ class _HabitListState extends State<HabitList> {
             isSameDay(habit.completionDate! as DateTime?, selectedDate))
         .toList();
 
-    return StoreConnector<AppState, List<Habit>>(
+    return StoreConnector<AppState, List<HabitModel>>(
       converter: (Store<AppState> store) => store.state.habits,
-      builder: (BuildContext context, List<Habit> habits) {
+      builder: (BuildContext context, List<HabitModel> habits) {
         final completedHabits = store.state.completedHabits;
         return Scaffold(
           appBar: AppBar(
@@ -611,7 +611,7 @@ PageRouteBuilder _createRoute() {
   );
 }
 
-void _showDeleteConfirmationDialog(BuildContext context, Habit habit) {
+void _showDeleteConfirmationDialog(BuildContext context, HabitModel habit) {
   showDialog(
     context: context,
     builder: (BuildContext dialogContext) {
@@ -641,7 +641,7 @@ void _showDeleteConfirmationDialog(BuildContext context, Habit habit) {
   );
 }
 
-void _showHabitDetailsDialog(BuildContext context, Habit habit) {
+void _showHabitDetailsDialog(BuildContext context, HabitModel habit) {
   showDialog(
     context: context,
     builder: (BuildContext dialogContext) {
