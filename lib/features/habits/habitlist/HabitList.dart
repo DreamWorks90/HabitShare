@@ -383,7 +383,7 @@ class _HabitListState extends State<HabitList> {
                                                           'assets/images/streak.svg',
                                                           height: 20,
                                                         ),
-                                                        SizedBox(
+                                                        const SizedBox(
                                                           width: 5,
                                                         ),
                                                         const Text(
@@ -394,7 +394,7 @@ class _HabitListState extends State<HabitList> {
                                                                 FontWeight.bold,
                                                           ),
                                                         ),
-                                                        SizedBox(
+                                                        const SizedBox(
                                                           width: 15,
                                                         ),
                                                         SvgPicture.asset(
@@ -564,9 +564,9 @@ class _HabitListState extends State<HabitList> {
 
   Color getCardColor(String? habitType) {
     if (habitType == 'Build') {
-      return Color(0xFFD8FAD2);
+      return const Color(0xFFD8FAD2);
     } else if (habitType == 'Quit') {
-      return Color(0xffffefe4);
+      return const Color(0xffffefe4);
     }
     return Colors.blue; // Default color
   }

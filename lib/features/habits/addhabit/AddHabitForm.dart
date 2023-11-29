@@ -36,31 +36,22 @@ class _AddHabitFormState extends State<AddHabitForm> {
   HabitService habitService = HabitService();
   UserService userService = UserService();
 
-  Future<void> _onSaveHabit(
-    String name,
-    int type,
-    int frequency,
-    String description,
-    String startDate,
-    String time
-  ) async {
-
+  Future<void> _onSaveHabit(String name, int type, int frequency,
+      String description, String startDate, String time) async {
     List<Map<String, Object?>> users = await userService.retrieveLoggedInUser();
     Map<String, Object?> userResult = users.first;
     User loggedInUser = User.fromMap(userResult);
 
     Habit habit = Habit(
-      name: name,
-      type: 0,
-      frequency: frequency,
-      description: description,
-      time: time,
-      start_date: startDate,
-      user_id: loggedInUser.user_id!
-    );
+        name: name,
+        type: 0,
+        frequency: frequency,
+        description: description,
+        time: time,
+        start_date: startDate,
+        user_id: loggedInUser.user_id!);
 
-    await habitService
-        .insertHabit(habit);
+    await habitService.insertHabit(habit);
   }
 
   Future<void> showTimePicker(BuildContext context) async {
@@ -370,19 +361,18 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     ),
                   );
 
-                  DateTime? tempStartDate  = DateTime.tryParse(startDate!);
+                  DateTime? tempStartDate = DateTime.tryParse(startDate!);
                   var formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
                   String formattedStartDate = formatter.format(tempStartDate!);
                   String formattedTime = formatter.format(notificationTime!);
 
                   _onSaveHabit(
-                    nameController.text,
-                    0,
-                    selectedFrequency!.index,
-                    descriptionController.text,
-                    formattedTime,
-                    formattedStartDate
-                  );
+                      nameController.text,
+                      0,
+                      selectedFrequency!.index,
+                      descriptionController.text,
+                      formattedTime,
+                      formattedStartDate);
 
                   nameController.clear();
                   descriptionController.clear();
