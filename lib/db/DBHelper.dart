@@ -30,6 +30,17 @@ class DBHelper {
     );
   }
 
+  Future<void> updatePassword(String email, String newPassword) async {
+    final db = await _dbHelper.database;
+
+    await db.update(
+      'users',
+      {'password': newPassword},
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+  }
+
   Future<void> _onCreate(Database db, int version) async {
     const queryCreateUsersTable = '''
       CREATE TABLE users (

@@ -55,9 +55,6 @@ dependencies:
   flutter_rounded_date_picker: ^3.0.4
   flutter_share: ^2.0.0
   image_picker: ^1.0.4
-
-
-
   flutter_test:
     sdk: flutter
 
@@ -77,8 +74,8 @@ dependencies:
   tuple: ^2.0.2
   provider: ^6.1.1
   flutter_login_facebook: ^1.9.0
-
   http: ^1.1.0
+  uuid: ^4.2.1
 
 
 

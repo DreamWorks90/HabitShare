@@ -114,43 +114,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
     }
   }
 
-  Future<void> _scheduleNotification(
-      String habitName, DateTime notificationTime) async {
-    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
-
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      'your_channel_id',
-      'your_channel_name',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
-
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      0, // Notification ID
-      'Reminder for $habitName',
-      'It\'s time for your habit: $habitName!',
-      tz.TZDateTime.from(
-          notificationTime, tz.local), // Use the notification time
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'your_channel_id',
-          'your_channel_name',
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-      ),
-      androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      payload: 'customData',
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

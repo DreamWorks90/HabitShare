@@ -1,9 +1,10 @@
-import 'package:HabitShare/Constants.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:HabitShare/Constants.dart';
+import 'package:HabitShare/db/services/UserService.dart';
 
 class ResetPassword extends StatefulWidget {
-  const ResetPassword({super.key});
+  const ResetPassword({Key? key}) : super(key: key);
 
   @override
   State<ResetPassword> createState() => _ResetPasswordState();
@@ -47,11 +48,11 @@ class _ResetPasswordState extends State<ResetPassword> {
     return null;
   }
 
-  void _resetPassword() async {
+  Future<void> _resetPassword() async {
     final String email = _emailController.text;
     final String newPassword = _newPasswordController.text;
     final String confirmPassword = _confirmPasswordController.text;
-    // Verify that newPassword and confirmPassword match.
+
     if (newPassword != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -62,33 +63,38 @@ class _ResetPasswordState extends State<ResetPassword> {
       );
       return;
     }
-    // Retrieve user data based on the email.
-    final prefs = await SharedPreferences.getInstance();
-    final storedEmail = prefs.getString('email');
-    final storedPassword = prefs.getString('password');
 
-    // Verify that the email matches the stored email.
-    if (email != storedEmail) {
+    try {
+      await _updatePasswordInDatabase(email, newPassword);
+    } catch (error) {
+      print('Error resetting password: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Email not found. Please enter a valid email address.'),
+          content: Text('An error occurred while resetting the password.'),
           duration: Duration(seconds: 3),
         ),
       );
-      return;
     }
-    // Update the stored password with the new password.
-    prefs.setString('password', newPassword);
+  }
 
-    // Reset the form fields and show a success message.
-    _emailController.clear();
-    _newPasswordController.clear();
-    _confirmPasswordController.clear();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Password reset successfully!'),
-      ),
-    );
+  Future<void> _updatePasswordInDatabase(
+      String email, String newPassword) async {
+    try {
+      UserService userService = UserService();
+      await userService.updateUserPassword(email, newPassword);
+
+      _emailController.clear();
+      _newPasswordController.clear();
+      _confirmPasswordController.clear();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password updated successfully!'),
+        ),
+      );
+    } catch (error) {
+      throw error; // Rethrow the error for handling in the calling method
+    }
   }
 
   @override
@@ -96,10 +102,11 @@ class _ResetPasswordState extends State<ResetPassword> {
     return Scaffold(
       appBar: AppBar(
         title: const Center(
-            child: Text(
-          'Reset Password',
-          style: appbarTextStyle,
-        )),
+          child: Text(
+            'Reset Password',
+            style: appbarTextStyle,
+          ),
+        ),
         backgroundColor: primaryColor,
       ),
       body: SingleChildScrollView(
@@ -111,28 +118,34 @@ class _ResetPasswordState extends State<ResetPassword> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
+                const SizedBox(
+                  height: 20,
+                ),
                 TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      hintText: 'Enter your email',
-                      prefixIcon: Icon(Icons.mail),
-                      border: OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.red),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.red),
-                      ),
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    hintText: 'Enter your email',
+                    prefixIcon: Icon(Icons.mail),
+                    border: OutlineInputBorder(),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
                     ),
-                    validator: _validateEmail),
-                const SizedBox(height: 16.0),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red),
+                    ),
+                  ),
+                  validator: _validateEmail,
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
                 TextFormField(
                   controller: _newPasswordController,
                   obscureText: true,
@@ -156,7 +169,9 @@ class _ResetPasswordState extends State<ResetPassword> {
                   ),
                   validator: _validateNewPassword,
                 ),
-                const SizedBox(height: 16.0),
+                const SizedBox(
+                  height: 20,
+                ),
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: true,
@@ -180,25 +195,31 @@ class _ResetPasswordState extends State<ResetPassword> {
                   ),
                   validator: _validateConfirmPassword,
                 ),
-                SizedBox(height: 40.0),
+                const SizedBox(height: 40.0),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
                     backgroundColor: primaryColor,
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      _resetPassword();
+                      await _resetPassword();
                     }
                   },
-                  child: Text(
+                  child: const Text(
                     'Reset Password',
                     style: buttonTextStyle,
                   ),
+                ),
+                const SizedBox(height: 20),
+                SvgPicture.asset(
+                  'assets/images/reset.svg',
+                  height: 350,
                 ),
               ],
             ),

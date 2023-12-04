@@ -49,6 +49,18 @@ class UserService {
     }
   }
 
+  Future<void> updateUserPassword(String email, String newPassword) async {
+    final db = await _dbHelper.database;
+
+    // Update the password for the user with the specified email
+    await db.update(
+      'users',
+      {'password': newPassword},
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+  }
+
   Future<void> updateLoggedInStatus(String email, int newLoggedInValue) async {
     final db = await _dbHelper.database;
 
