@@ -13,6 +13,7 @@ import 'package:HabitShare/db/services/UserService.dart';
 import 'package:HabitShare/db/models/Habit.dart';
 import 'package:HabitShare/db/models/User.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:uuid/uuid.dart';
 
 class AddHabitForm extends StatefulWidget {
   const AddHabitForm({Key? key}) : super(key: key);
@@ -32,6 +33,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
   String? termDate;
   Map<String, dynamic>? selectedFriend;
   TimeOfDay? selectedTimeOfDay;
+  String habitUuid = const Uuid().v4();
 
   HabitService habitService = HabitService();
   UserService userService = UserService();
@@ -43,13 +45,15 @@ class _AddHabitFormState extends State<AddHabitForm> {
     User loggedInUser = User.fromMap(userResult);
 
     Habit habit = Habit(
+        habitUuid: habitUuid, // Store the generated UUID in the habit model
         name: name,
         type: 0,
         frequency: frequency,
         description: description,
         time: time,
         start_date: startDate,
-        user_id: loggedInUser.user_id!);
+        user_id: loggedInUser.user_id!,
+        habit_id: null);
 
     await habitService.insertHabit(habit);
   }
@@ -300,6 +304,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     startDate != null &&
                     termDate != null) {
                   final habitModel = HabitModel(
+                    habitUuid: habitUuid,
                     name: nameController.text,
                     description: descriptionController.text,
                     frequency: selectedFrequency!,

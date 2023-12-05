@@ -45,6 +45,7 @@ class DBHelper {
     const queryCreateUsersTable = '''
       CREATE TABLE users (
 	      user_id integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	      
 	      name varchar NOT NULL,
 	      email varchar NOT NULL UNIQUE,
 	      password varchar NOT NULL,
@@ -72,6 +73,7 @@ class DBHelper {
     const queryCreateHabitsTable = '''
       CREATE TABLE habits (
 	      habit_id integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	       habitUuid varchar NOT NULL,
 	      name varchar NOT NULL,
 	      type int NOT NULL,
 	      frequency int NOT NULL,

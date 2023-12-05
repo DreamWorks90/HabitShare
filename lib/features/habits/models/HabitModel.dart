@@ -9,6 +9,7 @@ enum HabitFrequency {
 enum HabitTime { morning, afternoon, evening, night, custom }
 
 class HabitModel {
+  final String habitUuid;
   final String name;
   final String description;
   final HabitFrequency frequency;
@@ -29,5 +30,6 @@ class HabitModel {
       required this.startDate,
       required this.termDate,
       required this.notificationMessage,
-      this.completionDate});
+      this.completionDate,
+      required this.habitUuid});
 }
