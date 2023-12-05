@@ -33,7 +33,24 @@ class _AddHabitFormState extends State<AddHabitForm> {
   String? termDate;
   Map<String, dynamic>? selectedFriend;
   TimeOfDay? selectedTimeOfDay;
-  String habitUuid = const Uuid().v4();
+  late String habitUuid;
+  //String habitUuid = const Uuid().v4();
+  late String habitLink;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the UUID when the widget is initialized
+    habitUuid = const Uuid().v4();
+    habitLink = generateShareableLink();
+  }
+
+// Function to generate a shareable link using the habit's UUID
+  String generateShareableLink() {
+    // Create a URL scheme with the habit's UUID
+    String link = 'HabitShare://habit/$habitUuid';
+    return link;
+  }
 
   HabitService habitService = HabitService();
   UserService userService = UserService();
@@ -46,6 +63,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
 
     Habit habit = Habit(
         habitUuid: habitUuid, // Store the generated UUID in the habit model
+        habitLink: habitLink,
         name: name,
         type: 0,
         frequency: frequency,
@@ -305,6 +323,8 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     termDate != null) {
                   final habitModel = HabitModel(
                     habitUuid: habitUuid,
+                    habitLink: habitLink,
+                    habitType: selectedHabitType,
                     name: nameController.text,
                     description: descriptionController.text,
                     frequency: selectedFrequency!,

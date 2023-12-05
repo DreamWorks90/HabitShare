@@ -74,6 +74,7 @@ class DBHelper {
       CREATE TABLE habits (
 	      habit_id integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	       habitUuid varchar NOT NULL,
+	       habitLink varchar NOT NULL,
 	      name varchar NOT NULL,
 	      type int NOT NULL,
 	      frequency int NOT NULL,

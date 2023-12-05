@@ -10,19 +10,22 @@ class Habit {
   final String? end_date;
   final int user_id;
   final int? friend_id;
+  final String habitLink;
 
-  Habit(
-      {required this.habit_id,
-      required this.habitUuid,
-      required this.name,
-      required this.type,
-      required this.frequency,
-      this.description,
-      required this.time,
-      required this.start_date,
-      this.end_date,
-      required this.user_id,
-      this.friend_id});
+  Habit({
+    required this.habit_id,
+    required this.habitUuid,
+    required this.name,
+    required this.type,
+    required this.frequency,
+    this.description,
+    required this.time,
+    required this.start_date,
+    this.end_date,
+    required this.user_id,
+    this.friend_id,
+    required this.habitLink,
+  });
 
   Map<String, dynamic> toMap() {
     return {
@@ -36,7 +39,8 @@ class Habit {
       'start_date': start_date,
       'end_date': end_date,
       'user_id': user_id,
-      'friend_id': friend_id
+      'friend_id': friend_id,
+      'habitLink': habitLink,
     };
   }
 
@@ -52,6 +56,7 @@ class Habit {
         end_date: map['end_date'] ?? '',
         user_id: map['user_id'] ?? '',
         friend_id: map['friend_id'] ?? '',
-        habitUuid: '');
+        habitUuid: '',
+        habitLink: '');
   }
 }
