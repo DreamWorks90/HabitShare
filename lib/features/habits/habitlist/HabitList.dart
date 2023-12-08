@@ -12,8 +12,6 @@ import 'package:HabitShare/features/habits/addhabit/AddHabitForm.dart';
 import 'package:HabitShare/features/habits/models/HabitModel.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import '../../../userprovider.dart';
-
 class HabitList extends StatefulWidget {
   const HabitList({Key? key});
 
@@ -676,14 +674,14 @@ void _showHabitDetailsDialog(BuildContext context, HabitModel habit) {
               height: 15,
             ), // Display habit time if available, 'N/A' otherwise
             Text(
-              'Start Date:  ${habit.startDate ?? 'N/A'}',
+              'Start Date:  ${habit.startDate}',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             const SizedBox(
               height: 15,
             ), // Display start date if available, 'N/A' otherwise
             Text(
-              'Term Date:  ${habit.termDate ?? 'N/A'}',
+              'Term Date:  ${habit.termDate}',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             const SizedBox(

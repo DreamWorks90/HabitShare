@@ -1,8 +1,6 @@
-import 'package:HabitShare/db/services/UserService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:HabitShare/Constants.dart';
-import 'package:HabitShare/db/models/User.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,17 +18,6 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  UserService userService = UserService();
-
-  Future<void> _onSaveCredentials(userName, userEmail, userPassword) async {
-    final name = userName;
-    final email = userEmail;
-    final password = userPassword;
-
-    await userService
-        .insertUser(User(name: name, email: email, password: password, logged_in: 1));
-  }
 
   String? _validateUsername(String? value) {
     if (value == null || value.isEmpty) {
@@ -220,7 +207,6 @@ class _SignUpState extends State<SignUp> {
       prefs.setString('email', email);
       prefs.setString('password', password);
 
-      _onSaveCredentials(name, email, password);
       showDialog(
         context: context,
         builder: (BuildContext dialogContext) {

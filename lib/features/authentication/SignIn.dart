@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:HabitShare/features/Authentication/SignUp.dart';
 import 'package:HabitShare/Constants.dart';
-import 'package:HabitShare/db/services/UserService.dart';
+
 import 'package:HabitShare/features/Authentication/ResetPassword.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_svg/svg.dart';
@@ -44,21 +44,6 @@ class _SignInState extends State<SignIn> {
       return 'Password must be at least 6 characters';
     }
     return null;
-  }
-
-  Future<void> _performSignInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleSignInAccount =
-          await _googleSignIn.signIn();
-
-      if (googleSignInAccount != null) {
-        // Perform the necessary actions after successful Google Sign-In
-        // For now, we'll just print the email to the console
-        print('Google Sign-In Successful. Email: ${googleSignInAccount.email}');
-      }
-    } catch (error) {
-      print('Google Sign-In Error: $error');
-    }
   }
 
   @override
@@ -187,7 +172,6 @@ class _SignInState extends State<SignIn> {
                         GestureDetector(
                           onTap: () {
                             // Handle Google sign-in logic here
-                            _performSignInWithGoogle();
                           },
                           child: SvgPicture.asset(
                             'assets/images/google.svg',
@@ -248,20 +232,14 @@ class _SignInState extends State<SignIn> {
 
   Future<void> _performSignIn(
       String enteredEmail, String enteredPassword) async {
-    final userService = UserService();
-
-    // Fetch user details by entered email from the database
-    final user = await userService.getUserByEmail(enteredEmail);
-
-    if (user != null && user.password == enteredPassword) {
-      await userService.updateLoggedInStatus(enteredEmail, 1);
-      // If user exists and passwords match
-      // Proceed to the next screen (HabitStatus)
-      Navigator.of(context).pushReplacement(
+    final prefs = await SharedPreferences.getInstance();
+    final storedEmail = prefs.getString('email');
+    final storedPassword = prefs.getString('password');
+    if (enteredEmail == storedEmail && enteredPassword == storedPassword) {
+      navigatorKey.currentState?.pushReplacement(
         MaterialPageRoute(builder: (context) => const HabitStatus()),
       );
     } else {
-      // Show sign-in failed dialog if user doesn't exist or passwords don't match
       showSignInFailedDialog();
     }
   }

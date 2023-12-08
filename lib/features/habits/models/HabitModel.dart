@@ -32,5 +32,21 @@ class HabitModel {
       required this.termDate,
       required this.notificationMessage,
       this.completionDate,
-      required this.habitUuid, required this.habitLink});
+      required this.habitUuid,
+      required this.habitLink});
+
+  factory HabitModel.fromMap(Map<String, dynamic> map) {
+    return HabitModel(
+      name: map['name'],
+      description: map['description'],
+      frequency: map['frequency'],
+      time: map['time'],
+      startDate: '',
+      notificationMessage: '',
+      termDate: '',
+      habitUuid: '',
+      habitLink: '',
+      // Map other properties if needed
+    );
+  }
 }

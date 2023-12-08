@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:HabitShare/Constants.dart';
-import 'package:HabitShare/db/services/UserService.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ResetPassword extends StatefulWidget {
   const ResetPassword({Key? key}) : super(key: key);
@@ -48,11 +48,11 @@ class _ResetPasswordState extends State<ResetPassword> {
     return null;
   }
 
-  Future<void> _resetPassword() async {
+  void _resetPassword() async {
     final String email = _emailController.text;
     final String newPassword = _newPasswordController.text;
     final String confirmPassword = _confirmPasswordController.text;
-
+    // Verify that newPassword and confirmPassword match.
     if (newPassword != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -63,38 +63,33 @@ class _ResetPasswordState extends State<ResetPassword> {
       );
       return;
     }
+    // Retrieve user data based on the email.
+    final prefs = await SharedPreferences.getInstance();
+    final storedEmail = prefs.getString('email');
+    final storedPassword = prefs.getString('password');
 
-    try {
-      await _updatePasswordInDatabase(email, newPassword);
-    } catch (error) {
-      print('Error resetting password: $error');
+    // Verify that the email matches the stored email.
+    if (email != storedEmail) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('An error occurred while resetting the password.'),
+          content: Text('Email not found. Please enter a valid email address.'),
           duration: Duration(seconds: 3),
         ),
       );
+      return;
     }
-  }
+    // Update the stored password with the new password.
+    prefs.setString('password', newPassword);
 
-  Future<void> _updatePasswordInDatabase(
-      String email, String newPassword) async {
-    try {
-      UserService userService = UserService();
-      await userService.updateUserPassword(email, newPassword);
-
-      _emailController.clear();
-      _newPasswordController.clear();
-      _confirmPasswordController.clear();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password updated successfully!'),
-        ),
-      );
-    } catch (error) {
-      throw error; // Rethrow the error for handling in the calling method
-    }
+    // Reset the form fields and show a success message.
+    _emailController.clear();
+    _newPasswordController.clear();
+    _confirmPasswordController.clear();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Password reset successfully!'),
+      ),
+    );
   }
 
   @override
@@ -208,7 +203,7 @@ class _ResetPasswordState extends State<ResetPassword> {
                   ),
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      await _resetPassword();
+                      _resetPassword();
                     }
                   },
                   child: const Text(
