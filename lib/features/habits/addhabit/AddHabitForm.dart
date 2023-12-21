@@ -1,8 +1,10 @@
+import 'package:HabitShare/Realm/realm_service.dart';
 import 'package:animated_button_bar/animated_button_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import '../../../Realm/habit.dart';
 import '../../../redux/AppState.dart';
 import '../models/HabitModel.dart';
 import 'package:intl/intl.dart';
@@ -31,6 +33,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
   late String habitUuid;
   //String habitUuid = const Uuid().v4();
   late String habitLink;
+  //final realmService = RealmService();
 
   @override
   void initState() {
@@ -313,6 +316,27 @@ class _AddHabitFormState extends State<AddHabitForm> {
                       habitModel,
                     ),
                   );
+                  /* final habit = Habit(
+                    null, // Auto-generated primary key
+                    habitModel.habitUuid,
+                    habitModel.habitLink,
+                    habitModel.name,
+                    habitModel.description,
+                    habitModel.frequency.index, // Store the index of the enum
+                    habitModel.time.format(context),
+                    //habitModel.habitType,
+                    habitModel.notificationMessage,
+                    habitModel.startDate,
+                    termDate: habitModel.termDate,
+                    completionDate:
+                        null, // Assuming completionDate is initially null
+                  );
+                  print("Before adding habit to Realm");
+                  // Add the habit to Realm
+
+                  await realmService.addHabit(habit);
+                  print("After adding habit to Realm");*/
+
                   var formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
                   nameController.clear();
                   descriptionController.clear();
@@ -325,10 +349,12 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   if (selectedHabitType == null) {
                     print("please select habit type");
                   }
+                  print("Before navigation");
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => const HabitStatus()));
+                  print("After navigation");
                 } else {
                   showDialog(
                     context: context,

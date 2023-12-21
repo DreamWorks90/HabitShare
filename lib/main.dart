@@ -1,15 +1,18 @@
+import 'package:HabitShare/Realm/habit.dart';
 import 'package:HabitShare/features/splash/SplashPage.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:HabitShare/redux/AppState.dart';
+import 'package:realm/realm.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +33,7 @@ class HabitTrackerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: const SplashPage(),
+      body: SplashPage(),
     );
   }
 }

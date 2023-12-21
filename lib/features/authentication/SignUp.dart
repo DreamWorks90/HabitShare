@@ -1,10 +1,11 @@
+import 'package:HabitShare/Realm/user/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:realm/realm.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -201,11 +202,28 @@ class _SignUpState extends State<SignUp> {
       final email = _emailController.text;
       final password = _passwordController.text;
 
+      // Add a new Habit to the Realm.
+      final config = Configuration.local([UserModel.schema]);
+      final realm = Realm(config);
+      UserModel newUser = UserModel(ObjectId(), name, email, password);
+      realm.write(() {
+        realm.add(newUser);
+      });
+
+// Query the Realm to check if the user exists
+      final usersQuery = realm.all<UserModel>();
+      final usersList =
+          usersQuery.toList(); // Convert the query results to a list
+      for (final user in usersList) {
+        print(
+            'User details added to Realm: ${user.name} ${user.email} ${user.password}');
+      }
+
       // Store signup details in Shared Preferences
-      final prefs = await SharedPreferences.getInstance();
+      /* final prefs = await SharedPreferences.getInstance();
       prefs.setString('name', name);
       prefs.setString('email', email);
-      prefs.setString('password', password);
+      prefs.setString('password', password);*/
 
       showDialog(
         context: context,

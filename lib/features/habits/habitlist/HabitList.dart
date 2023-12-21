@@ -57,7 +57,7 @@ class _HabitListState extends State<HabitList> {
                 const SizedBox(width: 10),
                 // Add user name here (you can replace the placeholder with your logic)
                 Text(
-                  'App Bar', // Replace 'User Name' with the actual user's name
+                  'Habit List', // Replace 'User Name' with the actual user's name
                   style: appbarTextStyle,
                 ),
               ],
