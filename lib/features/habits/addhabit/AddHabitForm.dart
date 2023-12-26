@@ -1,18 +1,16 @@
+import 'package:HabitShare/Realm/realm_service.dart';
 import 'package:animated_button_bar/animated_button_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import '../../../Realm/habit.dart';
 import '../../../redux/AppState.dart';
 import '../models/HabitModel.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:HabitShare/db/services/HabitService.dart';
-import 'package:HabitShare/db/services/UserService.dart';
-import 'package:HabitShare/db/models/Habit.dart';
-import 'package:HabitShare/db/models/User.dart';
-import 'package:timezone/timezone.dart' as tz;
+
+import 'package:uuid/uuid.dart';
 
 class AddHabitForm extends StatefulWidget {
   const AddHabitForm({Key? key}) : super(key: key);
@@ -32,35 +30,24 @@ class _AddHabitFormState extends State<AddHabitForm> {
   String? termDate;
   Map<String, dynamic>? selectedFriend;
   TimeOfDay? selectedTimeOfDay;
+  late String habitUuid;
+  //String habitUuid = const Uuid().v4();
+  late String habitLink;
+  //final realmService = RealmService();
 
-  HabitService habitService = HabitService();
-  UserService userService = UserService();
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the UUID when the widget is initialized
+    habitUuid = const Uuid().v4();
+    habitLink = generateShareableLink();
+  }
 
-  Future<void> _onSaveHabit(
-    String name,
-    int type,
-    int frequency,
-    String description,
-    String startDate,
-    String time
-  ) async {
-
-    List<Map<String, Object?>> users = await userService.retrieveLoggedInUser();
-    Map<String, Object?> userResult = users.first;
-    User loggedInUser = User.fromMap(userResult);
-
-    Habit habit = Habit(
-      name: name,
-      type: 0,
-      frequency: frequency,
-      description: description,
-      time: time,
-      start_date: startDate,
-      user_id: loggedInUser.user_id!
-    );
-
-    await habitService
-        .insertHabit(habit);
+// Function to generate a shareable link using the habit's UUID
+  String generateShareableLink() {
+    // Create a URL scheme with the habit's UUID
+    String link = 'HabitShare://habit/$habitUuid';
+    return link;
   }
 
   Future<void> showTimePicker(BuildContext context) async {
@@ -121,43 +108,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
         termDate = DateFormat('yyyy-MM-dd').format(pickedDate);
       });
     }
-  }
-
-  Future<void> _scheduleNotification(
-      String habitName, DateTime notificationTime) async {
-    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
-
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      'your_channel_id',
-      'your_channel_name',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
-
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      0, // Notification ID
-      'Reminder for $habitName',
-      'It\'s time for your habit: $habitName!',
-      tz.TZDateTime.from(
-          notificationTime, tz.local), // Use the notification time
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'your_channel_id',
-          'your_channel_name',
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-      ),
-      androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      payload: 'customData',
-    );
   }
 
   @override
@@ -346,6 +296,9 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     startDate != null &&
                     termDate != null) {
                   final habitModel = HabitModel(
+                    habitUuid: habitUuid,
+                    habitLink: habitLink,
+                    habitType: selectedHabitType,
                     name: nameController.text,
                     description: descriptionController.text,
                     frequency: selectedFrequency!,
@@ -357,33 +310,34 @@ class _AddHabitFormState extends State<AddHabitForm> {
 
                   habitModel.habitType = selectedHabitType;
                   //habit.sharedWith = selectedFriend;
-                  final notificationTime = DateTime(
-                      selectedDate!.year,
-                      selectedDate!.month,
-                      selectedDate!.day,
-                      selectedTimeOfDay!.hour - 1,
-                      selectedTimeOfDay!.minute);
 
                   StoreProvider.of<AppState>(context).dispatch(
                     AddHabitAction(
                       habitModel,
                     ),
                   );
-
-                  DateTime? tempStartDate  = DateTime.tryParse(startDate!);
-                  var formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
-                  String formattedStartDate = formatter.format(tempStartDate!);
-                  String formattedTime = formatter.format(notificationTime!);
-
-                  _onSaveHabit(
-                    nameController.text,
-                    0,
-                    selectedFrequency!.index,
-                    descriptionController.text,
-                    formattedTime,
-                    formattedStartDate
+                  /* final habit = Habit(
+                    null, // Auto-generated primary key
+                    habitModel.habitUuid,
+                    habitModel.habitLink,
+                    habitModel.name,
+                    habitModel.description,
+                    habitModel.frequency.index, // Store the index of the enum
+                    habitModel.time.format(context),
+                    //habitModel.habitType,
+                    habitModel.notificationMessage,
+                    habitModel.startDate,
+                    termDate: habitModel.termDate,
+                    completionDate:
+                        null, // Assuming completionDate is initially null
                   );
+                  print("Before adding habit to Realm");
+                  // Add the habit to Realm
 
+                  await realmService.addHabit(habit);
+                  print("After adding habit to Realm");*/
+
+                  var formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
                   nameController.clear();
                   descriptionController.clear();
                   setState(() {
@@ -395,10 +349,12 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   if (selectedHabitType == null) {
                     print("please select habit type");
                   }
+                  print("Before navigation");
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => const HabitStatus()));
+                  print("After navigation");
                 } else {
                   showDialog(
                     context: context,

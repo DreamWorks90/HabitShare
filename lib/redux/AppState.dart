@@ -15,6 +15,11 @@ class AppState {
 
 final List<HabitModel> initialHabits = [];
 
+class FetchHabitsAction {
+  final List<HabitModel> habits;
+  FetchHabitsAction(this.habits);
+}
+
 class AddHabitAction {
   final HabitModel habit;
   AddHabitAction(this.habit);
@@ -60,6 +65,11 @@ AppState appReducer(AppState state, dynamic action) {
     return AppState(
       habits: updatedHabits, // Don't modify habits
       completedHabits: List.from(state.completedHabits), events: [],
+    );
+  } else if (action is FetchHabitsAction) {
+    return AppState(
+      habits: action.habits, completedHabits: state.completedHabits, events: [],
+      // Copy other properties from the existing state if needed
     );
   }
   return state;

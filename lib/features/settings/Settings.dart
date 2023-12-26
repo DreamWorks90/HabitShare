@@ -1,7 +1,7 @@
+import 'package:HabitShare/features/authentication/SignIn.dart';
 import 'package:HabitShare/features/settings/profile.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 
 import '../../Constants.dart';
 
@@ -21,8 +21,8 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: Colors.blue,
+        title: const Text('Settings', style: appbarTextStyle),
+        backgroundColor: primaryColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -143,7 +143,8 @@ class _SettingsPageState extends State<SettingsPage> {
             MaterialPageRoute(builder: (context) => const ContactUsPage()));
         break;
       case 'Log Out':
-        // Implement log out functionality
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => const SignIn()));
         break;
       default:
         // Handle default case or navigate to a generic settings page
@@ -245,7 +246,8 @@ class PrivacyPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Privacy Settings'),
+        title: const Text('Privacy Settings', style: appbarTextStyle),
+        backgroundColor: primaryColor,
       ),
       body: const Center(
         child: Text('Privacy Settings Page'),
@@ -261,7 +263,8 @@ class FeedbackPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Feedback'),
+        title: const Text('Feedback', style: appbarTextStyle),
+        backgroundColor: primaryColor,
       ),
       body: const Center(
         child: Text('Feedback Page'),
@@ -277,7 +280,8 @@ class NotificationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notification Settings'),
+        title: const Text('Notification Settings', style: appbarTextStyle),
+        backgroundColor: primaryColor,
       ),
       body: const Center(
         child: Text('Notification Settings Page'),
@@ -293,7 +297,8 @@ class RateUsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Rate Us'),
+        title: const Text('Rate Us', style: appbarTextStyle),
+        backgroundColor: primaryColor,
       ),
       body: const Center(
         child: Text('Rate Us Page'),
@@ -309,7 +314,8 @@ class ShareAppPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Share App'),
+        title: const Text('Share App', style: appbarTextStyle),
+        backgroundColor: primaryColor,
       ),
       body: const Center(
         child: Text('Share App Page'),
@@ -325,7 +331,8 @@ class ReviewSupportPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Review and Support'),
+        title: const Text('Review and Support', style: appbarTextStyle),
+        backgroundColor: primaryColor,
       ),
       body: const Center(
         child: Text('Review and Support Page'),
@@ -341,7 +348,8 @@ class ContactUsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Contact Us'),
+        title: const Text('Contact Us', style: appbarTextStyle),
+        backgroundColor: primaryColor,
       ),
       body: const Center(
         child: Text('Contact Us Page'),
@@ -357,7 +365,8 @@ class GenericSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings Page'),
+        title: const Text('Settings Page', style: appbarTextStyle),
+        backgroundColor: primaryColor,
       ),
       body: const Center(
         child: Text('Generic Settings Page'),

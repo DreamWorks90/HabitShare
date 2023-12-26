@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:HabitShare/Constants.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -24,7 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
-        backgroundColor: Colors.blue,
+        backgroundColor: primaryColor,
         actions: [
           if (isEditing)
             TextButton(

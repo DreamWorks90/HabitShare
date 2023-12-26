@@ -9,6 +9,8 @@ enum HabitFrequency {
 enum HabitTime { morning, afternoon, evening, night, custom }
 
 class HabitModel {
+  final String habitUuid;
+  final String habitLink;
   final String name;
   final String description;
   final HabitFrequency frequency;
@@ -29,5 +31,22 @@ class HabitModel {
       required this.startDate,
       required this.termDate,
       required this.notificationMessage,
-      this.completionDate});
+      this.completionDate,
+      required this.habitUuid,
+      required this.habitLink});
+
+  factory HabitModel.fromMap(Map<String, dynamic> map) {
+    return HabitModel(
+      name: map['name'],
+      description: map['description'],
+      frequency: map['frequency'],
+      time: map['time'],
+      startDate: '',
+      notificationMessage: '',
+      termDate: '',
+      habitUuid: '',
+      habitLink: '',
+      // Map other properties if needed
+    );
+  }
 }
