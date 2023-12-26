@@ -42,7 +42,7 @@ class UserModel extends _UserModel
   String get password =>
       RealmObjectBase.get<String>(this, 'password') as String;
   @override
-  set password(String value) => throw RealmUnsupportedSetError();
+  set password(String value) => RealmObjectBase.set(this, 'password', value);
 
   @override
   Stream<RealmObjectChanges<UserModel>> get changes =>

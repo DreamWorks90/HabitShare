@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:HabitShare/Constants.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:realm/realm.dart';
+import 'package:HabitShare/Realm/user/user.dart';
 
 class ResetPassword extends StatefulWidget {
   const ResetPassword({Key? key}) : super(key: key);
-
   @override
   State<ResetPassword> createState() => _ResetPasswordState();
 }
@@ -49,9 +49,10 @@ class _ResetPasswordState extends State<ResetPassword> {
   }
 
   void _resetPassword() async {
-    final String email = _emailController.text;
+    final String enteredEmail = _emailController.text;
     final String newPassword = _newPasswordController.text;
     final String confirmPassword = _confirmPasswordController.text;
+
     // Verify that newPassword and confirmPassword match.
     if (newPassword != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -63,33 +64,40 @@ class _ResetPasswordState extends State<ResetPassword> {
       );
       return;
     }
-    // Retrieve user data based on the email.
-    final prefs = await SharedPreferences.getInstance();
-    final storedEmail = prefs.getString('email');
-    final storedPassword = prefs.getString('password');
 
-    // Verify that the email matches the stored email.
-    if (email != storedEmail) {
+    // Open the realm instance
+    final config = Configuration.local([UserModel.schema]);
+    final realm = Realm(config);
+
+    // Retrieve the user with the specified email
+    var storedEmail = realm.query<UserModel>('email == "$enteredEmail"');
+
+    if (storedEmail.isNotEmpty) {
+      // Update the password for the user
+      realm.write(() {
+        storedEmail[0].password = newPassword;
+      });
+
+      // Show a success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password reset successfully!'),
+        ),
+      );
+
+      // Reset the form fields
+      _emailController.clear();
+      _newPasswordController.clear();
+      _confirmPasswordController.clear();
+    } else {
+      // If user is not found, show an error message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Email not found. Please enter a valid email address.'),
           duration: Duration(seconds: 3),
         ),
       );
-      return;
     }
-    // Update the stored password with the new password.
-    prefs.setString('password', newPassword);
-
-    // Reset the form fields and show a success message.
-    _emailController.clear();
-    _newPasswordController.clear();
-    _confirmPasswordController.clear();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Password reset successfully!'),
-      ),
-    );
   }
 
   @override

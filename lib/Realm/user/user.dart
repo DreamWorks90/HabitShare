@@ -7,5 +7,5 @@ class _UserModel {
   late ObjectId id;
   late final String name;
   late final String email;
-  late final String password;
+  late String password;
 }

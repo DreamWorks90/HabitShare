@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:HabitShare/features/Authentication/SignUp.dart';
 import 'package:HabitShare/Constants.dart';
-
 import 'package:HabitShare/features/Authentication/ResetPassword.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:HabitShare/Realm/user/user.dart';
 import 'package:realm/realm.dart';
+
+import '../../MongoDb/mongolocaldb.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -173,6 +173,7 @@ class _SignInState extends State<SignIn> {
                       children: [
                         GestureDetector(
                           onTap: () {
+                            pushToMongoDB();
                             // Handle Google sign-in logic here
                           },
                           child: SvgPicture.asset(
@@ -236,31 +237,27 @@ class _SignInState extends State<SignIn> {
       String enteredEmail, String enteredPassword) async {
     final config = Configuration.local([UserModel.schema]);
     final realm = Realm(config);
-    //final users = realm.all<UserModel>();
-    var storedEmail = realm.query<UserModel>('email == "$enteredEmail"');
-    var storedPassword =
-        realm.query<UserModel>('password =="$enteredPassword"');
 
-    //if (enteredEmail == storedEmail && enteredPassword == storedPassword) {
-    if (storedEmail.isNotEmpty && storedPassword.isNotEmpty) {
-      navigatorKey.currentState?.pushReplacement(
-        MaterialPageRoute(builder: (context) => const HabitStatus()),
-      );
-    } else {
-      showSignInFailedDialog();
+    var storedEmail =
+        realm.query<UserModel>('email == "$enteredEmail"').freeze();
+
+    if (storedEmail.isNotEmpty) {
+      // Assuming that email is unique, so we take the first user
+      var user = storedEmail[0];
+
+      // Check if the entered password matches the stored password
+      if (user.password == enteredPassword) {
+        // Password is correct, navigate to the next screen
+        navigatorKey.currentState?.pushReplacement(
+          MaterialPageRoute(builder: (context) => const HabitStatus()),
+        );
+        return;
+      }
     }
+
+    // If no user found or password doesn't match, show sign-in failed dialog
+    showSignInFailedDialog();
   }
-  /*final prefs = await SharedPreferences.getInstance();
-    final storedEmail = prefs.getString('email');
-    final storedPassword = prefs.getString('password');
-    if (enteredEmail == storedEmail && enteredPassword == storedPassword) {
-      navigatorKey.currentState?.pushReplacement(
-        MaterialPageRoute(builder: (context) => const HabitStatus()),
-      );
-    } else {
-      showSignInFailedDialog();
-    }
-  }*/
 
   void showSignInFailedDialog() async {
     showDialog(
