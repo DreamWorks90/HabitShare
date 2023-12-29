@@ -77,7 +77,7 @@ dependencies:
   http: ^1.1.0
   uuid: ^3.0.7
   uni_links: ^0.5.1
-  mongo_dart: ^0.9.3
+  mongo_dart: ^0.9.4
   realm: ^1.6.1
 
 

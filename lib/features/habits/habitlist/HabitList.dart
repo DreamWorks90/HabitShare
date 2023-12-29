@@ -21,11 +21,11 @@ class HabitList extends StatefulWidget {
 
 class _HabitListState extends State<HabitList> {
   DateTime selectedDate = DateTime.now();
-  List<HabitModel> completedHabits = [];
-  List<HabitModel> activeHabits = [];
-  List<HabitModel> completedHabitsForToday = [];
+  List<HabitModelRedux> completedHabits = [];
+  List<HabitModelRedux> activeHabits = [];
+  List<HabitModelRedux> completedHabitsForToday = [];
 
-  Map<DateTime, List<HabitModel>> habits = {};
+  Map<DateTime, List<HabitModelRedux>> habits = {};
   bool isVisible = true;
 
   int _currentSegment = 0; // Added to keep track of the selected segment
@@ -39,9 +39,9 @@ class _HabitListState extends State<HabitList> {
             isSameDay(habit.completionDate! as DateTime?, selectedDate))
         .toList();
 
-    return StoreConnector<AppState, List<HabitModel>>(
+    return StoreConnector<AppState, List<HabitModelRedux>>(
       converter: (Store<AppState> store) => store.state.habits,
-      builder: (BuildContext context, List<HabitModel> habits) {
+      builder: (BuildContext context, List<HabitModelRedux> habits) {
         final completedHabits = store.state.completedHabits;
         return Scaffold(
           appBar: AppBar(
@@ -609,7 +609,8 @@ PageRouteBuilder _createRoute() {
   );
 }
 
-void _showDeleteConfirmationDialog(BuildContext context, HabitModel habit) {
+void _showDeleteConfirmationDialog(
+    BuildContext context, HabitModelRedux habit) {
   showDialog(
     context: context,
     builder: (BuildContext dialogContext) {
@@ -639,7 +640,7 @@ void _showDeleteConfirmationDialog(BuildContext context, HabitModel habit) {
   );
 }
 
-void _showHabitDetailsDialog(BuildContext context, HabitModel habit) {
+void _showHabitDetailsDialog(BuildContext context, HabitModelRedux habit) {
   showDialog(
     context: context,
     builder: (BuildContext dialogContext) {

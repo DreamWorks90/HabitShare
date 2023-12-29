@@ -5,7 +5,6 @@ import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:realm/realm.dart';
-
 import '../../MongoDb/mongolocaldb.dart';
 
 class SignUp extends StatefulWidget {

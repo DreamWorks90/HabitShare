@@ -4,13 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import '../../../MongoDb/mongolocaldb.dart';
 import '../../../Realm/habit.dart';
 import '../../../redux/AppState.dart';
 import '../models/HabitModel.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
-
-import 'package:uuid/uuid.dart';
+import 'package:uuid/uuid.dart' as uuid;
+import 'package:realm/realm.dart';
+//import '../../MongoDb/mongolocaldb.dart';
+import 'package:HabitShare/Realm/habit.dart';
+import 'package:HabitShare/features/habits/models/HabitModel.dart';
 
 class AddHabitForm extends StatefulWidget {
   const AddHabitForm({Key? key}) : super(key: key);
@@ -20,6 +24,7 @@ class AddHabitForm extends StatefulWidget {
 }
 
 class _AddHabitFormState extends State<AddHabitForm> {
+  final RealmService realmService = RealmService();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   HabitFrequency? selectedFrequency;
@@ -31,7 +36,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
   Map<String, dynamic>? selectedFriend;
   TimeOfDay? selectedTimeOfDay;
   late String habitUuid;
-  //String habitUuid = const Uuid().v4();
   late String habitLink;
   //final realmService = RealmService();
 
@@ -39,7 +43,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
   void initState() {
     super.initState();
     // Initialize the UUID when the widget is initialized
-    habitUuid = const Uuid().v4();
+    habitUuid = const uuid.Uuid().v4();
     habitLink = generateShareableLink();
   }
 
@@ -295,7 +299,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     selectedHabitType != null &&
                     startDate != null &&
                     termDate != null) {
-                  final habitModel = HabitModel(
+                  final habitModel = HabitModelRedux(
                     habitUuid: habitUuid,
                     habitLink: habitLink,
                     habitType: selectedHabitType,
@@ -316,26 +320,28 @@ class _AddHabitFormState extends State<AddHabitForm> {
                       habitModel,
                     ),
                   );
-                  /* final habit = Habit(
-                    null, // Auto-generated primary key
-                    habitModel.habitUuid,
-                    habitModel.habitLink,
-                    habitModel.name,
-                    habitModel.description,
-                    habitModel.frequency.index, // Store the index of the enum
-                    habitModel.time.format(context),
-                    //habitModel.habitType,
-                    habitModel.notificationMessage,
-                    habitModel.startDate,
-                    termDate: habitModel.termDate,
-                    completionDate:
-                        null, // Assuming completionDate is initially null
-                  );
-                  print("Before adding habit to Realm");
-                  // Add the habit to Realm
 
+                  // Save habit details to Realm
+                  final habit = HabitModel(
+                      ObjectId(),
+                      habitUuid,
+                      habitLink,
+                      nameController.text,
+                      descriptionController.text,
+                      selectedHabitType!,
+                      selectedFrequency!.toString(),
+                      selectedTime!.toString(),
+                      startDate!,
+                      termDate!);
                   await realmService.addHabit(habit);
-                  print("After adding habit to Realm");*/
+                  var habits = realmService.getAllHabits();
+                  final habitList = habits.toList();
+
+                  // Query the Realm to check if the habit exists
+                  for (final habit in habitList) {
+                    print(
+                        'habit details added to Realm:  ${habit.id} ${habit.name} ${habit.description} ${habit.habitType}');
+                  }
 
                   var formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
                   nameController.clear();
@@ -349,12 +355,12 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   if (selectedHabitType == null) {
                     print("please select habit type");
                   }
-                  print("Before navigation");
+                  pushHabitsToMongoDB();
+
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => const HabitStatus()));
-                  print("After navigation");
                 } else {
                   showDialog(
                     context: context,

@@ -2,9 +2,9 @@ import 'package:redux/redux.dart';
 import 'package:HabitShare/features/habits/models/HabitModel.dart';
 
 class AppState {
-  final List<HabitModel> habits;
-  final List<HabitModel> completedHabits;
-  List<HabitModel> events;
+  final List<HabitModelRedux> habits;
+  final List<HabitModelRedux> completedHabits;
+  List<HabitModelRedux> events;
 
   AppState({
     required this.habits,
@@ -13,15 +13,15 @@ class AppState {
   });
 }
 
-final List<HabitModel> initialHabits = [];
+final List<HabitModelRedux> initialHabits = [];
 
 class FetchHabitsAction {
-  final List<HabitModel> habits;
+  final List<HabitModelRedux> habits;
   FetchHabitsAction(this.habits);
 }
 
 class AddHabitAction {
-  final HabitModel habit;
+  final HabitModelRedux habit;
   AddHabitAction(this.habit);
 }
 
@@ -31,7 +31,7 @@ class RemoveHabitAction {
 }
 
 class AddCompletedHabitAction {
-  final HabitModel habit;
+  final HabitModelRedux habit;
   AddCompletedHabitAction(this.habit);
 }
 

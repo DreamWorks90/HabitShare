@@ -8,7 +8,7 @@ enum HabitFrequency {
 
 enum HabitTime { morning, afternoon, evening, night, custom }
 
-class HabitModel {
+class HabitModelRedux {
   final String habitUuid;
   final String habitLink;
   final String name;
@@ -22,7 +22,7 @@ class HabitModel {
   String?
       completionDate; // Date when the habit was completed (null if not completed)
 
-  HabitModel(
+  HabitModelRedux(
       {required this.name,
       required this.description,
       required this.frequency,
@@ -35,8 +35,8 @@ class HabitModel {
       required this.habitUuid,
       required this.habitLink});
 
-  factory HabitModel.fromMap(Map<String, dynamic> map) {
-    return HabitModel(
+  factory HabitModelRedux.fromMap(Map<String, dynamic> map) {
+    return HabitModelRedux(
       name: map['name'],
       description: map['description'],
       frequency: map['frequency'],
