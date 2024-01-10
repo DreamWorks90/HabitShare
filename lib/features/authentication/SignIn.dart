@@ -5,9 +5,7 @@ import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/Authentication/ResetPassword.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+
 import 'package:HabitShare/Realm/user/user.dart';
 import 'package:realm/realm.dart';
 
@@ -25,7 +23,7 @@ class _SignInState extends State<SignIn> {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
@@ -173,7 +171,7 @@ class _SignInState extends State<SignIn> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            pushToMongoDB();
+                            pushUserToMongoDB();
                             // Handle Google sign-in logic here
                           },
                           child: SvgPicture.asset(

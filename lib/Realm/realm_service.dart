@@ -37,5 +37,11 @@ class RealmService {
     });
   }
 
+  Future<void> completedHabit(HabitModel habit) async {
+    _realm.write(() {
+      _realm.delete(habit);
+    });
+  }
+
 // Additional CRUD operations can be added based on your requirements
 }

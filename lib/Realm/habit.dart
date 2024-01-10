@@ -6,12 +6,15 @@ class _HabitModel {
   @PrimaryKey()
   late ObjectId id;
   late String habitUuid;
-  late final String habitLink;
-  late final String name;
-  late final String description;
-  late final String habitType;
-  late final String frequency;
-  late final String time;
-  late final String startDate;
-  late final String termDate;
+  late  String habitLink;
+  late  String name;
+  late  String description;
+  late  String habitType;
+  late  String frequency;
+  late  String time;
+  late  String startDate;
+  late  String termDate;
+  late  String completionDate;
+  late  bool isCompletedToday;
+  late  int totalCompletedDays;
 }

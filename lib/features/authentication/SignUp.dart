@@ -89,7 +89,7 @@ class _SignUpState extends State<SignUp> {
                 TextButton(
                   onPressed: () {
                     // Push user details to MongoDB
-                    pushToMongoDB();
+                    pushUserToMongoDB();
                     Navigator.of(dialogContext).pop();
                     Navigator.push(
                         context,

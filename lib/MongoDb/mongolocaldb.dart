@@ -3,7 +3,7 @@ import 'package:mongo_dart/mongo_dart.dart';
 import 'package:realm/realm.dart'; // Import the Realm package
 import 'package:HabitShare/Realm/habit.dart';
 
-void pushToMongoDB() async {
+Future<void> pushUserToMongoDB() async {
   // Initialize Realm
   final config = Configuration.local([UserModel.schema]);
   final realm = Realm(config);
@@ -42,7 +42,7 @@ void pushToMongoDB() async {
   print('Connections closed');
 }
 
-void pushHabitsToMongoDB() async {
+Future<void> pushHabitsToMongoDB() async {
   // Initialize Realm
   final config = Configuration.local([HabitModel.schema]);
   final realm = Realm(config);
@@ -90,4 +90,32 @@ void pushHabitsToMongoDB() async {
   realm.close();
   await db.close();
   print('Connections closed');
+}
+
+Future<void> syncLocalDatabaseWithMongoDB() async {
+  final config = Configuration.local([UserModel.schema, HabitModel.schema]);
+  final realm = Realm(config);
+
+  try {
+    print('Checking if local Realm database is empty...');
+    // Check if the local Realm database is empty
+    if (realm.all<UserModel>().isEmpty && realm.all<HabitModel>().isEmpty) {
+      print(
+          'Local Realm database is empty. Fetching and inserting data from MongoDB...');
+      // Fetch and insert user data from MongoDB
+      await pushUserToMongoDB();
+
+      // Fetch and insert habits data from MongoDB
+      await pushHabitsToMongoDB();
+      print('Data successfully synced from MongoDB to local Realm database.');
+    } else {
+      print('Local Realm database is not empty. No need to sync.');
+    }
+  } catch (error, stackTrace) {
+    print('Error syncing with MongoDB: $error');
+    print('Stack trace: $stackTrace');
+  } finally {
+    // Close Realm connection
+    realm.close();
+  }
 }

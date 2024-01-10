@@ -1,20 +1,17 @@
 import 'package:HabitShare/Realm/realm_service.dart';
+import 'package:HabitShare/features/habits/models/HabitModel.dart';
 import 'package:animated_button_bar/animated_button_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
-import 'package:flutter_redux/flutter_redux.dart';
+
 import '../../../MongoDb/mongolocaldb.dart';
 import '../../../Realm/habit.dart';
-import '../../../redux/AppState.dart';
-import '../models/HabitModel.dart';
+
 import 'package:intl/intl.dart';
 import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
 import 'package:uuid/uuid.dart' as uuid;
 import 'package:realm/realm.dart';
-//import '../../MongoDb/mongolocaldb.dart';
-import 'package:HabitShare/Realm/habit.dart';
-import 'package:HabitShare/features/habits/models/HabitModel.dart';
 
 class AddHabitForm extends StatefulWidget {
   const AddHabitForm({Key? key}) : super(key: key);
@@ -37,7 +34,11 @@ class _AddHabitFormState extends State<AddHabitForm> {
   TimeOfDay? selectedTimeOfDay;
   late String habitUuid;
   late String habitLink;
-  //final realmService = RealmService();
+  String? completionDate;
+  bool isCompletedToday = false;
+  int totalCompletedDays = 0;
+
+
 
   @override
   void initState() {
@@ -299,28 +300,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     selectedHabitType != null &&
                     startDate != null &&
                     termDate != null) {
-                  final habitModel = HabitModelRedux(
-                    habitUuid: habitUuid,
-                    habitLink: habitLink,
-                    habitType: selectedHabitType,
-                    name: nameController.text,
-                    description: descriptionController.text,
-                    frequency: selectedFrequency!,
-                    time: selectedTimeOfDay!,
-                    startDate: startDate!,
-                    termDate: termDate!,
-                    notificationMessage: '',
-                  );
-
-                  habitModel.habitType = selectedHabitType;
-                  //habit.sharedWith = selectedFriend;
-
-                  StoreProvider.of<AppState>(context).dispatch(
-                    AddHabitAction(
-                      habitModel,
-                    ),
-                  );
-
                   // Save habit details to Realm
                   final habit = HabitModel(
                       ObjectId(),
@@ -332,7 +311,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                       selectedFrequency!.toString(),
                       selectedTime!.toString(),
                       startDate!,
-                      termDate!);
+                      termDate!,completionDate ?? '',isCompletedToday,totalCompletedDays);
                   await realmService.addHabit(habit);
                   var habits = realmService.getAllHabits();
                   final habitList = habits.toList();
@@ -343,7 +322,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
                         'habit details added to Realm:  ${habit.id} ${habit.name} ${habit.description} ${habit.habitType}');
                   }
 
-                  var formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
                   nameController.clear();
                   descriptionController.clear();
                   setState(() {

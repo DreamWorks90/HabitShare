@@ -1,4 +1,4 @@
-import 'package:redux/redux.dart';
+/*import 'package:redux/redux.dart';
 import 'package:HabitShare/features/habits/models/HabitModel.dart';
 
 class AppState {
@@ -21,8 +21,8 @@ class FetchHabitsAction {
 }
 
 class AddHabitAction {
-  final HabitModelRedux habit;
-  AddHabitAction(this.habit);
+  final HabitModelRedux habitRedux;
+  AddHabitAction(this.habitRedux);
 }
 
 class RemoveHabitAction {
@@ -44,7 +44,7 @@ class RemoveCompletedHabitAction {
 AppState appReducer(AppState state, dynamic action) {
   if (action is AddHabitAction) {
     return AppState(
-      habits: List.from(state.habits)..add(action.habit),
+      habits: List.from(state.habits)..add(action.habitRedux),
       completedHabits: state.completedHabits,
       events: [],
     );
@@ -82,4 +82,4 @@ final store = Store<AppState>(
     completedHabits: [],
     events: [],
   ),
-);
+);*/
