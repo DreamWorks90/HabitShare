@@ -1,25 +1,24 @@
-import 'package:HabitShare/features/splash/SplashPage.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:HabitShare/redux/AppState.dart';
+import 'MongoDb/mongolocaldb.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await syncLocalDatabaseWithMongoDB();
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return StoreProvider(
-      store: store,
-      child: const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Habit Tracker App',
-        home: HabitTrackerScreen(),
-      ),
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Habit Tracker App',
+      home: HabitTrackerScreen(),
     );
   }
 }
@@ -30,7 +29,7 @@ class HabitTrackerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: const SplashPage(),
+      body: HabitStatus(),
     );
   }
 }

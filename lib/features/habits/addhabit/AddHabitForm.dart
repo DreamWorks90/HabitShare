@@ -1,18 +1,17 @@
+import 'package:HabitShare/Realm/realm_service.dart';
+import 'package:HabitShare/features/habits/models/HabitModel.dart';
 import 'package:animated_button_bar/animated_button_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-import '../../../redux/AppState.dart';
-import '../models/HabitModel.dart';
+
+import '../../../MongoDb/mongolocaldb.dart';
+import '../../../Realm/habit.dart';
+
 import 'package:intl/intl.dart';
 import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:HabitShare/db/services/HabitService.dart';
-import 'package:HabitShare/db/services/UserService.dart';
-import 'package:HabitShare/db/models/Habit.dart';
-import 'package:HabitShare/db/models/User.dart';
-import 'package:timezone/timezone.dart' as tz;
+import 'package:uuid/uuid.dart' as uuid;
+import 'package:realm/realm.dart';
 
 class AddHabitForm extends StatefulWidget {
   const AddHabitForm({Key? key}) : super(key: key);
@@ -22,6 +21,7 @@ class AddHabitForm extends StatefulWidget {
 }
 
 class _AddHabitFormState extends State<AddHabitForm> {
+  final RealmService realmService = RealmService();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   HabitFrequency? selectedFrequency;
@@ -32,35 +32,27 @@ class _AddHabitFormState extends State<AddHabitForm> {
   String? termDate;
   Map<String, dynamic>? selectedFriend;
   TimeOfDay? selectedTimeOfDay;
+  late String habitUuid;
+  late String habitLink;
+  String? completionDate;
+  bool isCompletedToday = false;
+  int totalCompletedDays = 0;
 
-  HabitService habitService = HabitService();
-  UserService userService = UserService();
 
-  Future<void> _onSaveHabit(
-    String name,
-    int type,
-    int frequency,
-    String description,
-    String startDate,
-    String time
-  ) async {
 
-    List<Map<String, Object?>> users = await userService.retrieveLoggedInUser();
-    Map<String, Object?> userResult = users.first;
-    User loggedInUser = User.fromMap(userResult);
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the UUID when the widget is initialized
+    habitUuid = const uuid.Uuid().v4();
+    habitLink = generateShareableLink();
+  }
 
-    Habit habit = Habit(
-      name: name,
-      type: 0,
-      frequency: frequency,
-      description: description,
-      time: time,
-      start_date: startDate,
-      user_id: loggedInUser.user_id!
-    );
-
-    await habitService
-        .insertHabit(habit);
+// Function to generate a shareable link using the habit's UUID
+  String generateShareableLink() {
+    // Create a URL scheme with the habit's UUID
+    String link = 'HabitShare://habit/$habitUuid';
+    return link;
   }
 
   Future<void> showTimePicker(BuildContext context) async {
@@ -121,43 +113,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
         termDate = DateFormat('yyyy-MM-dd').format(pickedDate);
       });
     }
-  }
-
-  Future<void> _scheduleNotification(
-      String habitName, DateTime notificationTime) async {
-    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
-
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      'your_channel_id',
-      'your_channel_name',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
-
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      0, // Notification ID
-      'Reminder for $habitName',
-      'It\'s time for your habit: $habitName!',
-      tz.TZDateTime.from(
-          notificationTime, tz.local), // Use the notification time
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'your_channel_id',
-          'your_channel_name',
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-      ),
-      androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      payload: 'customData',
-    );
   }
 
   @override
@@ -345,44 +300,27 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     selectedHabitType != null &&
                     startDate != null &&
                     termDate != null) {
-                  final habitModel = HabitModel(
-                    name: nameController.text,
-                    description: descriptionController.text,
-                    frequency: selectedFrequency!,
-                    time: selectedTimeOfDay!,
-                    startDate: startDate!,
-                    termDate: termDate!,
-                    notificationMessage: '',
-                  );
+                  // Save habit details to Realm
+                  final habit = HabitModel(
+                      ObjectId(),
+                      habitUuid,
+                      habitLink,
+                      nameController.text,
+                      descriptionController.text,
+                      selectedHabitType!,
+                      selectedFrequency!.toString(),
+                      selectedTime!.toString(),
+                      startDate!,
+                      termDate!,completionDate ?? '',isCompletedToday,totalCompletedDays);
+                  await realmService.addHabit(habit);
+                  var habits = realmService.getAllHabits();
+                  final habitList = habits.toList();
 
-                  habitModel.habitType = selectedHabitType;
-                  //habit.sharedWith = selectedFriend;
-                  final notificationTime = DateTime(
-                      selectedDate!.year,
-                      selectedDate!.month,
-                      selectedDate!.day,
-                      selectedTimeOfDay!.hour - 1,
-                      selectedTimeOfDay!.minute);
-
-                  StoreProvider.of<AppState>(context).dispatch(
-                    AddHabitAction(
-                      habitModel,
-                    ),
-                  );
-
-                  DateTime? tempStartDate  = DateTime.tryParse(startDate!);
-                  var formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
-                  String formattedStartDate = formatter.format(tempStartDate!);
-                  String formattedTime = formatter.format(notificationTime!);
-
-                  _onSaveHabit(
-                    nameController.text,
-                    0,
-                    selectedFrequency!.index,
-                    descriptionController.text,
-                    formattedTime,
-                    formattedStartDate
-                  );
+                  // Query the Realm to check if the habit exists
+                  for (final habit in habitList) {
+                    print(
+                        'habit details added to Realm:  ${habit.id} ${habit.name} ${habit.description} ${habit.habitType}');
+                  }
 
                   nameController.clear();
                   descriptionController.clear();
@@ -395,6 +333,8 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   if (selectedHabitType == null) {
                     print("please select habit type");
                   }
+                  pushHabitsToMongoDB();
+
                   Navigator.push(
                       context,
                       MaterialPageRoute(

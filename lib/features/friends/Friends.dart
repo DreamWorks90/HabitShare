@@ -3,7 +3,6 @@ import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/friends/addfriends/contact.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter_share/flutter_share.dart';
-import 'package:flutter_svg/svg.dart';
 
 class FriendsTab extends StatefulWidget {
   final List<Contact> selectedFriends;
@@ -40,7 +39,7 @@ class _FriendsTabState extends State<FriendsTab> {
             onPressed: togglePopover,
           ),
         ],
-        title: Text("Friends", style: appbarTextStyle),
+        title: const Text("Friends", style: appbarTextStyle),
       ),
       body: isPopoverVisible
           ? Stack(

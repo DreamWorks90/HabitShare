@@ -1,16 +1,14 @@
-import 'package:HabitShare/db/services/UserService.dart';
+import 'package:HabitShare/Realm/user/user.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:HabitShare/Constants.dart';
-import 'package:HabitShare/db/models/User.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:realm/realm.dart';
+import '../../MongoDb/mongolocaldb.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
-
   @override
   State<SignUp> createState() => _SignUpState();
 }
@@ -20,17 +18,6 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  UserService userService = UserService();
-
-  Future<void> _onSaveCredentials(userName, userEmail, userPassword) async {
-    final name = userName;
-    final email = userEmail;
-    final password = userPassword;
-
-    await userService
-        .insertUser(User(name: name, email: email, password: password, logged_in: 1));
-  }
 
   String? _validateUsername(String? value) {
     if (value == null || value.isEmpty) {
@@ -61,6 +48,71 @@ class _SignUpState extends State<SignUp> {
       return 'Password must be at least 6 characters';
     }
     return null;
+  }
+
+  void _performSignup() async {
+    if (_formKey.currentState!.validate()) {
+      final enteredName = _usernameController.text;
+      final enteredEmail = _emailController.text;
+      final enteredPassword = _passwordController.text;
+
+      // Add a new user to the Realm.
+      final config = Configuration.local([UserModel.schema]);
+      final realm = Realm(config);
+
+      // Query the Realm to check if a user with the same email exists
+      final storedUser = realm.query<UserModel>('email == "$enteredEmail" ');
+      if (storedUser.isEmpty) {
+        // Update the password for the user
+        UserModel newUser =
+            UserModel(ObjectId(), enteredName, enteredEmail, enteredPassword);
+        realm.write(() {
+          realm.add(newUser);
+        });
+
+        // Query the Realm to get all users
+        final users = realm.all<UserModel>();
+        final usersList = users.toList();
+
+        // Query the Realm to check if the user exists
+        for (final user in usersList) {
+          print(
+              'User details added to Realm: ${user.name} ${user.email} ${user.password}');
+        }
+        showDialog(
+          context: context,
+          builder: (BuildContext dialogContext) {
+            return AlertDialog(
+              title: const Text('Success'),
+              content: const Text('Signup Successful!'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    // Push user details to MongoDB
+                    pushUserToMongoDB();
+                    Navigator.of(dialogContext).pop();
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const HabitStatus()));
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+      // Show a error message
+      else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'User with this email already exists. Please use a different email'),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -192,7 +244,7 @@ class _SignUpState extends State<SignUp> {
                       style: buttonTextStyle,
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 35,
                   ),
                   SvgPicture.asset(
@@ -206,42 +258,5 @@ class _SignUpState extends State<SignUp> {
         ),
       ),
     );
-  }
-
-  void _performSignup() async {
-    if (_formKey.currentState!.validate()) {
-      final name = _usernameController.text;
-      final email = _emailController.text;
-      final password = _passwordController.text;
-
-      // Store signup details in Shared Preferences
-      final prefs = await SharedPreferences.getInstance();
-      prefs.setString('name', name);
-      prefs.setString('email', email);
-      prefs.setString('password', password);
-
-      _onSaveCredentials(name, email, password);
-      showDialog(
-        context: context,
-        builder: (BuildContext dialogContext) {
-          return AlertDialog(
-            title: const Text('Success'),
-            content: const Text('Signup Successful!'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(dialogContext).pop();
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const HabitStatus()));
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    }
   }
 }

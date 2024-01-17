@@ -1,10 +1,10 @@
-import 'package:redux/redux.dart';
+/*import 'package:redux/redux.dart';
 import 'package:HabitShare/features/habits/models/HabitModel.dart';
 
 class AppState {
-  final List<HabitModel> habits;
-  final List<HabitModel> completedHabits;
-  List<HabitModel> events;
+  final List<HabitModelRedux> habits;
+  final List<HabitModelRedux> completedHabits;
+  List<HabitModelRedux> events;
 
   AppState({
     required this.habits,
@@ -13,11 +13,16 @@ class AppState {
   });
 }
 
-final List<HabitModel> initialHabits = [];
+final List<HabitModelRedux> initialHabits = [];
+
+class FetchHabitsAction {
+  final List<HabitModelRedux> habits;
+  FetchHabitsAction(this.habits);
+}
 
 class AddHabitAction {
-  final HabitModel habit;
-  AddHabitAction(this.habit);
+  final HabitModelRedux habitRedux;
+  AddHabitAction(this.habitRedux);
 }
 
 class RemoveHabitAction {
@@ -26,7 +31,7 @@ class RemoveHabitAction {
 }
 
 class AddCompletedHabitAction {
-  final HabitModel habit;
+  final HabitModelRedux habit;
   AddCompletedHabitAction(this.habit);
 }
 
@@ -39,7 +44,7 @@ class RemoveCompletedHabitAction {
 AppState appReducer(AppState state, dynamic action) {
   if (action is AddHabitAction) {
     return AppState(
-      habits: List.from(state.habits)..add(action.habit),
+      habits: List.from(state.habits)..add(action.habitRedux),
       completedHabits: state.completedHabits,
       events: [],
     );
@@ -61,6 +66,11 @@ AppState appReducer(AppState state, dynamic action) {
       habits: updatedHabits, // Don't modify habits
       completedHabits: List.from(state.completedHabits), events: [],
     );
+  } else if (action is FetchHabitsAction) {
+    return AppState(
+      habits: action.habits, completedHabits: state.completedHabits, events: [],
+      // Copy other properties from the existing state if needed
+    );
   }
   return state;
 }
@@ -72,4 +82,4 @@ final store = Store<AppState>(
     completedHabits: [],
     events: [],
   ),
-);
+);*/
