@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/Realm/habit.dart';
 import 'package:flutter/cupertino.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:HabitShare/features/habits/addhabit/AddHabitForm.dart';
 import 'package:realm/realm.dart';
 import 'package:table_calendar/table_calendar.dart';
+
 class HabitList extends StatefulWidget {
   const HabitList({Key? key});
   @override
@@ -21,18 +23,20 @@ class _HabitListState extends State<HabitList> {
   List<HabitModel> activeHabits = [];
   Map<DateTime, List<HabitModel>> habits = {};
   int _currentSegment = 0; // Added to keep track of the selected segment
+
   @override
   void initState() {
     super.initState();
     _initializeRealm();
-  }
-  Future<void> _initializeRealm() async {
+      }
+
+    Future<void> _initializeRealm() async {
     try {
       final config = Configuration.local([HabitModel.schema]); // Customize Realm configuration here
-    realm = await Realm.open(config);
-    setState(() {
-      isRealmInitialized = true;
-    });
+      realm = await Realm.open(config);
+      setState(() {
+        isRealmInitialized = true;
+      });
     } catch (e) {
       print('Error initializing Realm: $e');
     }// Trigger a rebuild after Realm is initialized
@@ -41,26 +45,51 @@ class _HabitListState extends State<HabitList> {
   @override
   Widget build(BuildContext context) {
     if (!isRealmInitialized) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
     else
     {
       final habits = realm.all<HabitModel>();
-      if (activeHabits.isEmpty) {
-        activeHabits = habits.where((habit) => !habit.isCompletedToday).toList();
-      }
-
-      if (completedHabits.isEmpty) {
-        completedHabits = habits.where((habit) => habit.isCompletedToday).toList();
-      }
-      print("activeHabits  Length: ${activeHabits.length}");
-      print("Completed Habits Length: ${completedHabits.length}");
-      // Initialize completedHabits list with habits completed for the current date
-      /*setState(() {
-      completedHabits = activeHabits.where((habit) =>
-      habit.isCompletedToday).toList();
-      print("Completed Habits Length: ${completedHabits.length}");
-      });*/
+      activeHabits = habits.where((habit) => !habit.isCompletedToday).toList();
+      completedHabits = habits.where((habit) => habit.isCompletedToday).toList();
+      // Check and update isCompletedToday for each completed habit
+      for (var completedHabit in completedHabits) {
+        final completionDate = DateTime.parse(completedHabit.completionDate);
+        final currentDate = DateTime.now();
+        // Compare the current date with the completion date
+        if (completedHabit.frequency == 'HabitFrequency.daily') {
+          if (currentDate.isAfter(completionDate) &&
+              !isSameDay(currentDate, completionDate)) {
+            // If the current date is after completionDate and not the same day, update isCompletedToday to false
+            realm.write(() {
+              completedHabit.isCompletedToday = false;
+            });
+          }
+        }
+        else if (completedHabit.frequency == 'HabitFrequency.weekly') {
+          final startDate = DateTime.parse(completedHabit.startDate);
+          final termDate = DateTime.parse(completedHabit.termDate);
+          DateTime nextOccurrence = startDate.add(const Duration(days: 7));
+          while (nextOccurrence.isBefore(termDate)|| isSameDay(nextOccurrence, termDate)) {
+            if (isSameDay(nextOccurrence, currentDate)) {
+              realm.write(() {
+                completedHabit.isCompletedToday = false;
+              });
+              break;
+            }
+            nextOccurrence = nextOccurrence.add(const Duration(days: 7));
+          }
+        }
+        else if (completedHabit.frequency == 'HabitFrequency.weekend') {
+          if ((currentDate.weekday == DateTime.sunday)&&
+    !isSameDay(currentDate, completionDate)) {
+            // Update isCompletedToday to false for Sunday
+            realm.write(() {
+              completedHabit.isCompletedToday = false;
+            });
+          }
+        }
+        }
       return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -71,7 +100,7 @@ class _HabitListState extends State<HabitList> {
                 backgroundImage: AssetImage('assets/profile_pic.jpg'),
                 radius: 20,
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               Text(
                 'Habit List', // Replace 'User Name' with the actual user's name
                 style: appbarTextStyle,
@@ -109,14 +138,14 @@ class _HabitListState extends State<HabitList> {
                       for (var completedHabit in completedHabits) {
                         completedHabits.remove(completedHabit);
                         activeHabits.add(completedHabit);
-                        completedHabit.completionDate = null.toString();
+                        completedHabit.termDate = null.toString();
                       }
                     } else {
                       if (completedHabits.isNotEmpty) {
                         for (var completedHabit in completedHabits) {
                           completedHabits.remove(completedHabit);
                           activeHabits.add(completedHabit);
-                          completedHabit.completionDate = null.toString();
+                          completedHabit.termDate = null.toString();
                         }
                       }
                     }
@@ -186,9 +215,9 @@ class _HabitListState extends State<HabitList> {
                       ),
                     )
                         : ListView.builder(
-                      itemCount: habits.length,
+                      itemCount: activeHabits.length,
                       itemBuilder: (context, index) {
-                        final habit = habits[index];
+                        final habit = activeHabits[index];
                         bool shouldDisplay = false;
                         final startDate =
                         DateTime.parse(habit.startDate);
@@ -218,11 +247,11 @@ class _HabitListState extends State<HabitList> {
                               (selectedDate.isBefore(termDate) || isSameDay(selectedDate, termDate));
                         }
                         if (shouldDisplay) {
-                          return GestureDetector(
-                            onTap: () {
-                              _showHabitDetailsDialog(context, habit);
-                            },
-                            child: Expanded(
+                          return Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                _showHabitDetailsDialog(context, habit);
+                              },
                               child: Row(
                                 children: [
                                   Transform.scale(
@@ -258,19 +287,27 @@ class _HabitListState extends State<HabitList> {
                                                   onPressed: () async {
                                                     realm.write(() {
                                                       habit.isCompletedToday = true;
-                                                      habit.totalCompletedDays += 1;
+                                                      if (habit.termDate != null) {
+                                                        // Check if termDate is available
+                                                        final DateTime currentDate = DateTime.now();
+                                                        final DateTime termDate = DateTime.parse(habit.termDate!);
+                                                        // If the current date is before or equal to the term date, increment totalCompletedDays
+                                                        if (currentDate.isBefore(termDate) || currentDate.isAtSameMomentAs(termDate)) {
+                                                          habit.totalCompletedDays += 1;
+                                                        }
+                                                      } else {
+                                                        // If termDate is null, always increment totalCompletedDays
+                                                        habit.totalCompletedDays += 1;
+                                                      }
+                                                      // Update completionDate with the current date
+                                                      habit.completionDate = DateTime.now().toString();
                                                     });
-                                                    print("habit.isCompletedToday: ${habit.isCompletedToday}");
-                                                    print("habit.totalCompletedDays: ${habit.totalCompletedDays}");
                                                     // Move habit from active to completed list
                                                     setState(() {
                                                       activeHabits.remove(selectedHabit);
                                                       completedHabits.add(selectedHabit!);
                                                     });
-                                                    print("Active Habits Length: ${activeHabits.length}");
-                                                    print("Completed Habits Length: ${completedHabits.length}");
                                                     // Update habit in Realm (if needed)
-                              
                                                     Navigator.of(dialogContext).pop(); // Close the dialog
                                                   },
                                                 ),
@@ -281,129 +318,131 @@ class _HabitListState extends State<HabitList> {
                                       },
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        right: 10, top: 2),
-                                    child: Card(
-                                      color:
-                                      getCardColor(habit.habitType),
-                                      elevation: 4.0,
-                                      child: Container(
-                                        height: 95,
-                                        width: 310,
-                                        decoration: BoxDecoration(
-                                          border: Border(
-                                            left: BorderSide(
-                                              width: 4,
-                                              color: getBorderColor(
-                                                  habit.habitType),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          right: 10, top: 2),
+                                      child: Card(
+                                        color:
+                                        getCardColor(habit.habitType),
+                                        elevation: 4.0,
+                                        child: Container(
+                                          height: 95,
+                                          width: 310,
+                                          decoration: BoxDecoration(
+                                            border: Border(
+                                              left: BorderSide(
+                                                width: 4,
+                                                color: getBorderColor(
+                                                    habit.habitType),
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        child: ListTile(
-                                          contentPadding:
-                                          const EdgeInsets.all(10.0),
-                                          title: Text(
-                                            habit.name.toUpperCase(),
-                                            style: const TextStyle(
-                                              fontSize: 15.0,
-                                              fontWeight: FontWeight.bold,
+                                          child: ListTile(
+                                            contentPadding:
+                                            const EdgeInsets.all(10.0),
+                                            title: Text(
+                                              habit.name.toUpperCase(),
+                                              style: const TextStyle(
+                                                fontSize: 15.0,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
-                                          ),
-                                          subtitle: Column(
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                habit.description,
-                                                style: const TextStyle(
-                                                  fontSize: 13.0,
-                                                  fontWeight:
-                                                  FontWeight.bold,
+                                            subtitle: Column(
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  habit.description,
+                                                  style: const TextStyle(
+                                                    fontSize: 13.0,
+                                                    fontWeight:
+                                                    FontWeight.bold,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                  TextOverflow.ellipsis,
                                                 ),
-                                                maxLines: 1,
-                                                overflow:
-                                                TextOverflow.ellipsis,
-                                              ),
-                                              const SizedBox(height: 8.0),
-                                              Row(
-                                                children: [
-                                                  SvgPicture.asset(
-                                                    'assets/images/streak.svg',
-                                                    height: 20,
-                                                  ),
-                                                  const SizedBox(
-                                                    width: 5,
-                                                  ),
-                                                  const Text(
-                                                    'Streak',
-                                                    style: TextStyle(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.bold,
+                                                const SizedBox(height: 8.0),
+                                                Row(
+                                                  children: [
+                                                    SvgPicture.asset(
+                                                      'assets/images/streak.svg',
+                                                      height: 20,
                                                     ),
-                                                  ),
-                                                  const SizedBox(
-                                                    width: 15,
-                                                  ),
-                                                  SvgPicture.asset(
-                                                    'assets/images/calendar.svg',
-                                                    height: 20,
-                                                  ),
-                                                  Text(
-                                                    '  ${habit.frequency.toString().split('.').last}',
-                                                    style:
-                                                    const TextStyle(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.bold,
+                                                    const SizedBox(
+                                                      width: 5,
                                                     ),
+                                                    const Text(
+                                                      'Streak',
+                                                      style: TextStyle(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                        FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(
+                                                      width: 15,
+                                                    ),
+                                                    SvgPicture.asset(
+                                                      'assets/images/calendar.svg',
+                                                      height: 20,
+                                                    ),
+                                                    Text(
+                                                      '  ${habit.frequency.toString().split('.').last}',
+                                                      style:
+                                                      const TextStyle(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                        FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                            trailing:
+                                            PopupMenuButton<String>(
+                                              onSelected: (value) {
+                                                if (value == 'delete') {
+                                                  _showDeleteConfirmationDialog(
+                                                      context, habit);
+                                                } else if (value ==
+                                                    'edit') {
+                                                } else if (value ==
+                                                    'shareFriends') {
+                                                }
+                                              },
+                                              itemBuilder: (BuildContext
+                                              context) =>
+                                              <PopupMenuEntry<String>>[
+                                                const PopupMenuItem<String>(
+                                                  value: 'edit',
+                                                  child: ListTile(
+                                                    leading:
+                                                    Icon(Icons.edit),
+                                                    title: Text('Edit'),
                                                   ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          trailing:
-                                          PopupMenuButton<String>(
-                                            onSelected: (value) {
-                                              if (value == 'delete') {
-                                                _showDeleteConfirmationDialog(
-                                                    context, habit);
-                                              } else if (value ==
-                                                  'edit') {
-                                              } else if (value ==
-                                                  'shareFriends') {
-                                              }
-                                            },
-                                            itemBuilder: (BuildContext
-                                            context) =>
-                                            <PopupMenuEntry<String>>[
-                                              const PopupMenuItem<String>(
-                                                value: 'edit',
-                                                child: ListTile(
-                                                  leading:
-                                                  Icon(Icons.edit),
-                                                  title: Text('Edit'),
                                                 ),
-                                              ),
-                                              const PopupMenuItem<String>(
-                                                value: 'delete',
-                                                child: ListTile(
-                                                  leading:
-                                                  Icon(Icons.delete),
-                                                  title: Text('Delete'),
+                                                const PopupMenuItem<String>(
+                                                  value: 'delete',
+                                                  child: ListTile(
+                                                    leading:
+                                                    Icon(Icons.delete),
+                                                    title: Text('Delete'),
+                                                  ),
                                                 ),
-                                              ),
-                                              const PopupMenuItem<String>(
-                                                value: 'shareFriends',
-                                                child: ListTile(
-                                                  leading:
-                                                  Icon(Icons.share),
-                                                  title: Text(
-                                                      'Share with Friends'),
+                                                const PopupMenuItem<String>(
+                                                  value: 'shareFriends',
+                                                  child: ListTile(
+                                                    leading:
+                                                    Icon(Icons.share),
+                                                    title: Text(
+                                                        'Share with Friends'),
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),

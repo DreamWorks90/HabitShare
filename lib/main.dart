@@ -5,7 +5,7 @@ import 'MongoDb/mongolocaldb.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await syncLocalDatabaseWithMongoDB();
-  runApp(const MyApp());
+   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -33,3 +33,6 @@ class HabitTrackerScreen extends StatelessWidget {
     );
   }
 }
+
+
+

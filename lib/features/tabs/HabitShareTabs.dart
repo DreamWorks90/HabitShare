@@ -61,9 +61,11 @@ class _HabitStatusState extends State<HabitStatus> {
         icon: Container(
           child: Column(
             children: [
-              SvgPicture.asset(
-                iconPath,
-                color: index == _currentIndex ? Colors.white : Colors.black,
+              Expanded(
+                child: SvgPicture.asset(
+                  iconPath,
+                  color: index == _currentIndex ? Colors.white : Colors.black,
+                ),
               ),
               SizedBox(height: 5),
               Text(
