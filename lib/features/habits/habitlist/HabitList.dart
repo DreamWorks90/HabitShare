@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/Realm/habit.dart';
+import 'package:HabitShare/features/habits/EditHabit/edit_habit_form.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:HabitShare/features/habits/addhabit/AddHabitForm.dart';
 import 'package:realm/realm.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'habit_list_utils.dart';
 
 class HabitList extends StatefulWidget {
   const HabitList({Key? key});
@@ -30,7 +31,16 @@ class _HabitListState extends State<HabitList> {
     _initializeRealm();
       }
 
-    Future<void> _initializeRealm() async {
+  void _refreshHabitList() {
+    setState(() {
+      // Fetch and update habits from the realm
+      final habits = realm.all<HabitModel>();
+      activeHabits = habits.where((habit) => !habit.isCompletedToday).toList();
+      completedHabits = habits.where((habit) => habit.isCompletedToday).toList();
+    });
+  }
+
+  Future<void> _initializeRealm() async {
     try {
       final config = Configuration.local([HabitModel.schema]); // Customize Realm configuration here
       realm = await Realm.open(config);
@@ -40,6 +50,21 @@ class _HabitListState extends State<HabitList> {
     } catch (e) {
       print('Error initializing Realm: $e');
     }// Trigger a rebuild after Realm is initialized
+  }
+  int calculateTotalDays(HabitModel habit) {
+    if (habit.startDate.isEmpty || habit.termDate.isEmpty) {
+      return 0; // Unable to calculate total days if start or term date is not provided
+    }
+    final DateTime startDateTime = DateTime.parse(habit.startDate);
+    final DateTime termDateTime = DateTime.parse(habit.termDate);
+    return termDateTime.difference(startDateTime).inDays + 1;
+  }
+  double calculateCompletionPercentage(HabitModel habit) {
+    final int totalDays = calculateTotalDays(habit);
+    if (totalDays == 0) {
+      return 0.0; // To avoid division by zero
+    }
+    return (habit.totalCompletedDays / totalDays) * 100;
   }
 
   @override
@@ -64,6 +89,9 @@ class _HabitListState extends State<HabitList> {
             realm.write(() {
               completedHabit.isCompletedToday = false;
             });
+            setState(() {
+              activeHabits.add(completedHabit);
+            });
           }
         }
         else if (completedHabit.frequency == 'HabitFrequency.weekly') {
@@ -75,17 +103,23 @@ class _HabitListState extends State<HabitList> {
               realm.write(() {
                 completedHabit.isCompletedToday = false;
               });
+              setState(() {
+                activeHabits.add(completedHabit);
+              });
               break;
             }
             nextOccurrence = nextOccurrence.add(const Duration(days: 7));
           }
         }
         else if (completedHabit.frequency == 'HabitFrequency.weekend') {
-          if ((currentDate.weekday == DateTime.sunday)&&
+          if (((currentDate.weekday == DateTime.sunday)||(currentDate.weekday == DateTime.saturday))&&
     !isSameDay(currentDate, completionDate)) {
             // Update isCompletedToday to false for Sunday
             realm.write(() {
               completedHabit.isCompletedToday = false;
+            });// Move habit from active to completed list
+            setState(() {
+              activeHabits.add(completedHabit);
             });
           }
         }
@@ -223,6 +257,8 @@ class _HabitListState extends State<HabitList> {
                         DateTime.parse(habit.startDate);
                         final termDate =
                         DateTime.parse(habit.termDate);
+                        int totalDays = calculateTotalDays(habit);
+                        double completionPercentage = calculateCompletionPercentage(habit);
                         if (habit.frequency == 'HabitFrequency.daily') {
                           shouldDisplay = selectedDate.isAfter(startDate) &&
                               (selectedDate.isBefore(termDate) || isSameDay(selectedDate, termDate));
@@ -247,10 +283,12 @@ class _HabitListState extends State<HabitList> {
                               (selectedDate.isBefore(termDate) || isSameDay(selectedDate, termDate));
                         }
                         if (shouldDisplay) {
+                          final String percentage =
+                              '%: ${completionPercentage.toStringAsFixed(2)}%';
                           return Expanded(
                             child: GestureDetector(
                               onTap: () {
-                                _showHabitDetailsDialog(context, habit);
+                                showHabitDetailsDialog(context, habit);
                               },
                               child: Row(
                                 children: [
@@ -366,9 +404,11 @@ class _HabitListState extends State<HabitList> {
                                                 const SizedBox(height: 8.0),
                                                 Row(
                                                   children: [
-                                                    SvgPicture.asset(
-                                                      'assets/images/streak.svg',
-                                                      height: 20,
+                                                    Expanded(
+                                                      child: SvgPicture.asset(
+                                                        'assets/images/streak.svg',
+                                                        height: 20,
+                                                      ),
                                                     ),
                                                     const SizedBox(
                                                       width: 5,
@@ -382,11 +422,13 @@ class _HabitListState extends State<HabitList> {
                                                       ),
                                                     ),
                                                     const SizedBox(
-                                                      width: 15,
+                                                      width: 5,
                                                     ),
-                                                    SvgPicture.asset(
-                                                      'assets/images/calendar.svg',
-                                                      height: 20,
+                                                    Expanded(
+                                                      child: SvgPicture.asset(
+                                                        'assets/images/calendar.svg',
+                                                        height: 20,
+                                                      ),
                                                     ),
                                                     Text(
                                                       '  ${habit.frequency.toString().split('.').last}',
@@ -396,7 +438,24 @@ class _HabitListState extends State<HabitList> {
                                                         fontWeight:
                                                         FontWeight.bold,
                                                       ),
+                                                    ),const SizedBox(
+                                                      width: 5,
                                                     ),
+                                                    SvgPicture.asset(
+                                                      'assets/images/streak.svg',
+                                                      height: 20,
+                                                    ),
+                                                    const SizedBox(
+                                                      width: 5,
+                                                    ),
+                                                     Text(
+                                                       percentage,
+                                                      style: const TextStyle(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                        FontWeight.bold,
+                                                      ),
+                                                     ),
                                                   ],
                                                 ),
                                               ],
@@ -405,10 +464,12 @@ class _HabitListState extends State<HabitList> {
                                             PopupMenuButton<String>(
                                               onSelected: (value) {
                                                 if (value == 'delete') {
-                                                  _showDeleteConfirmationDialog(
-                                                      context, habit);
+                                                  showDeleteConfirmationDialog(
+                                                      context,realm, habit);
                                                 } else if (value ==
                                                     'edit') {
+
+                                                  Navigator.push(context,MaterialPageRoute(builder: (context)=>EditHabitForm(habit: habit,refreshHabitList: _refreshHabitList,)));
                                                 } else if (value ==
                                                     'shareFriends') {
                                                 }
@@ -535,7 +596,7 @@ class _HabitListState extends State<HabitList> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.of(context).push(_createRoute());
+            Navigator.of(context).push(createRoute());
           },
           backgroundColor: primaryColor,
           child: const Icon(
@@ -551,8 +612,7 @@ class _HabitListState extends State<HabitList> {
     realm.close();
     super.dispose();
   }
-  void _showDeleteConfirmationDialog(
-      BuildContext context, HabitModel habit) {
+  void showDeleteConfirmationDialog(BuildContext context,Realm realm,HabitModel habit) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -570,11 +630,15 @@ class _HabitListState extends State<HabitList> {
               child: const Text('Delete'),
               onPressed: () async {
                 final habitUuid = habit.habitUuid; // Assuming habit is available
-                final habitToDelete = realm.query<HabitModel>('habitUuid = $habitUuid').first;
+                final habitToDelete = realm.query<HabitModel>('habitUuid == "$habitUuid"').first;
                 if (habitToDelete != null) {
+                  print("Habit found: ${habitToDelete.name} (${habitToDelete.habitUuid})");
                   realm.write(() {
                     // Delete the habit from Realm
                     realm.delete(habitToDelete);
+                  });
+                  setState(() {
+                    activeHabits.remove(habitToDelete);
                   });
                 }
                 Navigator.of(dialogContext).pop(); // Close the dialog
@@ -587,113 +651,9 @@ class _HabitListState extends State<HabitList> {
   }
 }
 
-Color getCardColor(String? habitType) {
-  if (habitType == 'Build') {
-    return const Color(0xFFD8FAD2);
-  } else if (habitType == 'Quit') {
-    return const Color(0xffffefe4);
-  }
-  return Colors.blue; // Default color
-}
 
-Color getBorderColor(String? habitType) {
-  if (habitType == 'Build') {
-    return Colors.green;
-  } else if (habitType == 'Quit') {
-    return Colors.red;
-  }
-  return Colors.blue; // Default color
-}
 
-Color getColorForHabitType(String? habitType) {
-  if (habitType == 'Build') {
-    return Colors.green;
-  } else if (habitType == 'Quit') {
-    return Colors.red;
-  }
-  return Colors.black; // Default color
-}
 
-PageRouteBuilder _createRoute() {
-  const duration = Duration(seconds: 1);
-  return PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) =>
-    const AddHabitForm(),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      const begin = Offset(0.0, 1.0);
-      const end = Offset.zero;
-      const curve = Curves.easeInOut;
-      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve))
-        ..animate(animation);
-      return SlideTransition(
-        position: animation.drive(tween),
-        child: child,
-      );
-    },
-    transitionDuration: duration,
-    reverseTransitionDuration: duration, // Set the animation duration here
-  );
-}
 
-void _showHabitDetailsDialog(BuildContext context, HabitModel habit) {
-  showDialog(
-    context: context,
-    builder: (BuildContext dialogContext) {
-      return AlertDialog(
-        title: Text(
-          '${habit.name}',
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-        ),
-        content: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Habit Description:  ${habit.description}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            Text(
-              'Frequency:  ${habit.frequency.toString().split('.').last}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            Text(
-              'Time:  ${habit.time.toString().split('.').last}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            const SizedBox(
-              height: 15,
-            ), // Display habit time if available, 'N/A' otherwise
-            Text(
-              'Start Date:  ${habit.startDate}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            const SizedBox(
-              height: 15,
-            ), // Display start date if available, 'N/A' otherwise
-            Text(
-              'Term Date:  ${habit.termDate}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            const SizedBox(
-              height: 15,
-            ), // Display term date if available, 'N/A' otherwise            // Add more details like time, start date, term date, streak, etc.
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Close'),
-            onPressed: () {
-              Navigator.of(dialogContext).pop(); // Close the dialog
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
+
+

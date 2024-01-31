@@ -17,11 +17,9 @@ class _HabitStatusState extends State<HabitStatus> {
   int _currentIndex = 0;
   final List<Widget> _tabs = [
     const HabitList(),
-    const FriendsTab(
-      selectedFriends: [],
-    ),
+    const FriendsTab(),
     const ReportsTab(),
-    SettingsPage(),
+    const SettingsPage(),
   ];
 
   @override
@@ -67,7 +65,7 @@ class _HabitStatusState extends State<HabitStatus> {
                   color: index == _currentIndex ? Colors.white : Colors.black,
                 ),
               ),
-              SizedBox(height: 5),
+              const SizedBox(height: 5),
               Text(
                 label,
                 style: TextStyle(

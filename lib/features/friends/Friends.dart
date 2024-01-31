@@ -5,11 +5,8 @@ import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter_share/flutter_share.dart';
 
 class FriendsTab extends StatefulWidget {
-  final List<Contact> selectedFriends;
-
   const FriendsTab({
     Key? key,
-    required this.selectedFriends,
   }) : super(key: key);
 
   @override
@@ -18,6 +15,7 @@ class FriendsTab extends StatefulWidget {
 
 class _FriendsTabState extends State<FriendsTab> {
   bool isPopoverVisible = false;
+  List<Contact> selectedFriends = [];
 
   // Function to toggle the visibility of the popover
   void togglePopover() {
@@ -26,9 +24,16 @@ class _FriendsTabState extends State<FriendsTab> {
     });
   }
 
+  void updateSelectedFriends(List<Contact> newSelectedFriends) {
+    setState(() {
+      selectedFriends = newSelectedFriends;
+      // Close the popover when friends are selected
+      isPopoverVisible = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final List<Contact> selectedFriends = widget.selectedFriends;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: primaryColor,
@@ -43,103 +48,107 @@ class _FriendsTabState extends State<FriendsTab> {
       ),
       body: isPopoverVisible
           ? Stack(
-              children: [
-                Positioned(
-                  right: 10,
-                  top: 10,
-                  child: IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: togglePopover,
-                  ),
-                ),
-                Center(
+        children: [
+          Positioned(
+            right: 10,
+            top: 10,
+            child: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: togglePopover,
+            ),
+          ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Container(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              height: 170,
-                              width: 200,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 5,
-                                  backgroundColor: primaryColor,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ContactPage(),
-                                    ),
-                                  );
-                                },
-                                child: const Text(
-                                  "Via Contact",
-                                  style: buttonTextStyle,
-                                ),
-                              ),
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: 170,
+                        width: 200,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: 5,
+                            backgroundColor: primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
                             ),
-                            const SizedBox(height: 20.0),
-                            SizedBox(
-                              height: 170,
-                              width: 200,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 5,
-                                  backgroundColor: primaryColor,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                ),
-                                onPressed: shareContent,
-                                child: const Text(
-                                  "via Link Share",
-                                  style: buttonTextStyle,
-                                ),
+                          ),
+                          onPressed: () async {
+                            // Update selectedFriends when ContactPage returns a result
+                            List<Contact>? result =
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ContactPage(),
                               ),
+                            );
+                            if (result != null) {
+                              updateSelectedFriends(result);
+                            }
+                          },
+                          child: const Text(
+                            "Via Contact",
+                            style: buttonTextStyle,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20.0),
+                      SizedBox(
+                        height: 170,
+                        width: 200,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: 5,
+                            backgroundColor: primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
                             ),
-                          ],
+                          ),
+                          onPressed: shareContent,
+                          child: const Text(
+                            "via Link Share",
+                            style: buttonTextStyle,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
               ],
-            )
-          : ListView.builder(
-              itemCount: selectedFriends.length,
-              itemBuilder: (context, index) {
-                Contact friend = selectedFriends[index];
-                return ListTile(
-                  title: Text(friend.displayName ?? ''),
-                  subtitle: Text(
-                    friend.phones?.isNotEmpty == true
-                        ? friend.phones!.first.value ?? ''
-                        : '',
-                  ),
-                );
-              },
             ),
+          ),
+        ],
+      )
+          : ListView.builder(
+        itemCount: selectedFriends.length,
+        itemBuilder: (context, index) {
+          Contact friend = selectedFriends[index];
+          return ListTile(
+            title: Text(friend.displayName ?? ''),
+            subtitle: Text(
+              friend.phones?.isNotEmpty == true
+                  ? friend.phones!.first.value ?? ''
+                  : '',
+            ),
+          );
+        },
+      ),
     );
   }
-}
 
-void shareContent() async {
-  try {
-    await FlutterShare.share(
-      title: 'Share Content',
-      text: 'Check out this link:',
-      linkUrl: 'https://example.com',
-    );
-  } catch (e) {
-    print('Error sharing: $e');
+  void shareContent() async {
+    try {
+      await FlutterShare.share(
+        title: 'Share Content',
+        text: 'Check out this link:',
+        linkUrl: 'https://example.com',
+      );
+    } catch (e) {
+      print('Error sharing: $e');
+    }
   }
 }

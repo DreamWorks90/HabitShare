@@ -4,17 +4,19 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:contacts_service/contacts_service.dart';
 
 class ContactPage extends StatefulWidget {
+  const ContactPage({super.key});
+
   @override
   _ContactPageState createState() => _ContactPageState();
 }
 
 class _ContactPageState extends State<ContactPage> {
   List<Contact> _contacts = [];
-  List<Contact> _selectedFriends = [];
-  TextEditingController _searchController = TextEditingController();
+  final List<Contact> _selectedFriends = [];
+  final TextEditingController _searchController = TextEditingController();
   bool _isLoading = false;
 
-  int _batchSize = 20;
+  final int _batchSize = 20;
   int _currentBatchIndex = 0;
 
   @override
@@ -41,7 +43,7 @@ class _ContactPageState extends State<ContactPage> {
       Iterable<Contact> contacts = await _loadContacts();
       _contacts = contacts.toList();
     } catch (e) {
-      // Handle error
+      print('Error loading contacts: $e');
     } finally {
       setState(() {
         _isLoading = false;
@@ -71,13 +73,7 @@ class _ContactPageState extends State<ContactPage> {
   }
 
   void _openSelectedFriendsPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            SelectedFriendsPage(selectedFriends: _selectedFriends),
-      ),
-    );
+    Navigator.pop(context, _selectedFriends);
   }
 
   void _searchContacts(String query) {
@@ -196,7 +192,7 @@ class _ContactPageState extends State<ContactPage> {
 class SelectedFriendsPage extends StatelessWidget {
   final List<Contact> selectedFriends;
 
-  SelectedFriendsPage({required this.selectedFriends});
+  const SelectedFriendsPage({super.key, required this.selectedFriends});
 
   @override
   Widget build(BuildContext context) {
