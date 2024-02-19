@@ -16,6 +16,7 @@ class FriendsTab extends StatefulWidget {
 class _FriendsTabState extends State<FriendsTab> {
   bool isPopoverVisible = false;
   List<Contact> selectedFriends = [];
+  bool hasNotifications = false;
 
   // Function to toggle the visibility of the popover
   void togglePopover() {
@@ -38,6 +39,16 @@ class _FriendsTabState extends State<FriendsTab> {
       appBar: AppBar(
         backgroundColor: primaryColor,
         actions: <Widget>[
+          IconButton(
+            icon: Icon(
+              Icons.notifications,
+              color: hasNotifications ? Colors.red : null,
+            ),
+            onPressed: () {
+              // Implement the action when notification icon is pressed
+              // For example, navigate to a notification page
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.group_add),
             iconSize: 25,

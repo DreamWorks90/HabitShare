@@ -1,29 +1,61 @@
+import 'package:HabitShare/Realm/invitation.dart';
 import 'package:HabitShare/Realm/user/user.dart';
 import 'package:mongo_dart/mongo_dart.dart';
-import 'package:realm/realm.dart'; // Import the Realm package
+import 'package:realm/realm.dart';
 import 'package:HabitShare/Realm/habit.dart';
 
-Future<void> pushUserToMongoDB() async {
-  // Initialize Realm
-  final config = Configuration.local([UserModel.schema]);
-  final realm = Realm(config);
+class MongoDBService {
+  late final Db db;
+  bool _isDatabaseOpened = false;
+  List<Map<String, dynamic>> usersFromMongo = [];
+  MongoDBService() {
+    initDatabase();
+  }
+  Future<void> initDatabase() async {
+    db = await Db.create('mongodb+srv://HabitShare:habitshare@cluster0.3yp4ekk.mongodb.net/HabitShare?retryWrites=true&w=majority');
 
+    await db.open();
+    print('Connected to MongoDB');
+    _isDatabaseOpened = true;
+  }
+
+  Future<void> closeDatabase() async {
+    try {
+      await db.close();
+      print('Disconnected from MongoDB');
+    } catch (e) {
+      print('Error closing database: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> retrieveUsersFromMongoDB() async {
+    try {
+      final userCollection = db.collection('UserModel');
+      usersFromMongo = await userCollection.find().toList();
+      print('Retrieved ${usersFromMongo.length} users from MongoDB');
+      return usersFromMongo;
+    } catch (e, stackTrace) {
+      print('Error retrieving users from MongoDB: $e');
+      print('Stack trace: $stackTrace');
+      return [];
+    }
+  }
+}
+
+
+final config = Configuration.local([UserModel.schema]);
+final realm = Realm(config);
+Future<void> pushUserToMongoDB(Db db) async {
   // Retrieve user details from Realm
   final users = realm.all<UserModel>();
-
-  // Connect to MongoDB
-  final db = await Db.create(
-      'mongodb+srv://HabitShare:habitshare@cluster0.3yp4ekk.mongodb.net/HabitShare?retryWrites=true&w=majority');
-  // 'mongodb://localhost:27017/HabitShare');
-  await db.open();
-  print('Connected to MongoDB');
-  // Convert Iterable to List<Map<String, dynamic>>
   final userList = users.map((user) {
     return {
       '_id': user.id.hexString, // Assuming _id is ObjectId
       'name': user.name,
       'email': user.email,
       'password': user.password,
+      'contactNumber': user.contactNumber,
+      'loggedIn': user.loggedIn,
     };
   }).toList();
   // Check for duplicate emails in MongoDB
@@ -35,28 +67,38 @@ Future<void> pushUserToMongoDB() async {
       await db.collection('UserModel').insert(user);
     }
   }
-  print('User details inserted into MongoDB');
-  // Close connections
-  realm.close();
-  await db.close();
-  print('Connections closed');
+
 }
 
-Future<void> pushHabitsToMongoDB() async {
-  // Initialize Realm
-  final config = Configuration.local([HabitModel.schema]);
+Future<void> pushInvitationToMongoDB(Db db) async {
+  final config = Configuration.local([InvitationModel.schema]);
   final realm = Realm(config);
+  // Retrieve Invitation details from Realm
+  final invitations = realm.all<InvitationModel>();
+  final invitationList = invitations.map((invitation) {
+    return {
+      '_id': invitation.id.hexString, // Assuming _id is ObjectId
+      'inviterId': invitation.inviterId,
+      'inviteeId': invitation.inviteeId,
+      'inviteeContactNumber': invitation.inviteeContactNumber,
+      'status': invitation.status,
+    };
+  }).toList();
+  // Check for duplicate invitation in MongoDB
+  for (final invitation in invitationList) {
+    final existingInvitation =
+    await db.collection('InvitationModel').findOne({'inviteeContactNumber': invitation['inviteeContactNumber']});
+    if (existingInvitation == null) {
+      // Insert invitation details into MongoDB only if email doesn't exist
+      await db.collection('InvitationModel').insert(invitation);
+    }
+  }
+}
 
+
+Future<void> pushHabitsToMongoDB(Db db) async {
   // Retrieve habit details from Realm
   final habits = realm.all<HabitModel>();
-
-  // Connect to MongoDB
-  final db = await Db.create(
-      'mongodb+srv://HabitShare:habitshare@cluster0.3yp4ekk.mongodb.net/HabitShare?retryWrites=true&w=majority');
-  await db.open();
-  print('Connected to MongoDB');
-
-  // Convert Iterable to List<Map<String, dynamic>>
   final habitList = habits.map((habit) {
     return {
       '_id': habit.id.hexString, // Assuming _id is ObjectId
@@ -71,7 +113,6 @@ Future<void> pushHabitsToMongoDB() async {
       'termDate': habit.termDate,
     };
   }).toList();
-
   // Check for duplicate habits in MongoDB (You may need to adjust this based on your actual data structure)
   for (final habit in habitList) {
     final existingHabit = await db.collection('HabitModel').findOne({
@@ -83,30 +124,15 @@ Future<void> pushHabitsToMongoDB() async {
       await db.collection('HabitModel').insert(habit);
     }
   }
-
-  print('Habit details inserted into MongoDB');
-
-  // Close connections
-  realm.close();
-  await db.close();
-  print('Connections closed');
 }
 
-Future<void> syncLocalDatabaseWithMongoDB() async {
-  final config = Configuration.local([UserModel.schema, HabitModel.schema]);
-  final realm = Realm(config);
-
+/*Future<void> syncLocalDatabaseWithMongoDB() async {
+  final db = await Db.create('mongodb+srv://HabitShare:habitshare@cluster0.3yp4ekk.mongodb.net/HabitShare?retryWrites=true&w=majority');
+  await db.open();
   try {
-    print('Checking if local Realm database is empty...');
-    // Check if the local Realm database is empty
     if (realm.all<UserModel>().isEmpty && realm.all<HabitModel>().isEmpty) {
-      print(
-          'Local Realm database is empty. Fetching and inserting data from MongoDB...');
-      // Fetch and insert user data from MongoDB
-      await pushUserToMongoDB();
-
-      // Fetch and insert habits data from MongoDB
-      await pushHabitsToMongoDB();
+      await pushUserToMongoDB(db);
+      await pushHabitsToMongoDB(db);
       print('Data successfully synced from MongoDB to local Realm database.');
     } else {
       print('Local Realm database is not empty. No need to sync.');
@@ -115,7 +141,6 @@ Future<void> syncLocalDatabaseWithMongoDB() async {
     print('Error syncing with MongoDB: $error');
     print('Stack trace: $stackTrace');
   } finally {
-    // Close Realm connection
-    realm.close();
+    await db.close();
   }
-}
+}*/

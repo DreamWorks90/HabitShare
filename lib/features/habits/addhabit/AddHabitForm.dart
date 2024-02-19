@@ -20,6 +20,7 @@ class AddHabitForm extends StatefulWidget {
 
 class _AddHabitFormState extends State<AddHabitForm> {
   final RealmService realmService = RealmService();
+  final MongoDBService mongoDBService = MongoDBService();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   HabitFrequency? selectedFrequency;
@@ -328,7 +329,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   if (selectedHabitType == null) {
                     print("please select habit type");
                   }
-                  pushHabitsToMongoDB();
+                  pushHabitsToMongoDB(mongoDBService.db);
                   Navigator.push(
                       context,
                       MaterialPageRoute(

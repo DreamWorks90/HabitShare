@@ -7,9 +7,11 @@ import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_svg/svg.dart';
 
 import 'package:HabitShare/Realm/user/user.dart';
+import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
 
 import '../../Mongo DB/mongoloid.dart';
+import '../friends/addfriends/current_user_provider.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -23,7 +25,7 @@ class _SignInState extends State<SignIn> {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
+final MongoDBService mongoDBService=MongoDBService();
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
@@ -142,7 +144,7 @@ class _SignInState extends State<SignIn> {
                       ),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          _performSignIn(
+                          performSignIn(context,
                               _emailController.text, _passwordController.text);
                         }
                       },
@@ -171,7 +173,7 @@ class _SignInState extends State<SignIn> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            pushUserToMongoDB();
+                            pushUserToMongoDB(mongoDBService.db);
                             // Handle Google sign-in logic here
                           },
                           child: SvgPicture.asset(
@@ -230,27 +232,30 @@ class _SignInState extends State<SignIn> {
           ),
         ));
   }
-
-  Future<void> _performSignIn(
-      String enteredEmail, String enteredPassword) async {
+  Future<void> performSignIn(BuildContext context, String enteredEmail, String enteredPassword) async {
     final config = Configuration.local([UserModel.schema]);
-    final realm = Realm(config);
-
-    var storedEmail =
-        realm.query<UserModel>('email == "$enteredEmail"').freeze();
-
-    if (storedEmail.isNotEmpty) {
-      // Assuming that email is unique, so we take the first user
-      var user = storedEmail[0];
-
-      // Check if the entered password matches the stored password
-      if (user.password == enteredPassword) {
-        // Password is correct, navigate to the next screen
-        navigatorKey.currentState?.pushReplacement(
-          MaterialPageRoute(builder: (context) => const HabitStatus()),
-        );
-        return;
+    try {
+      final readRealm = Realm(config);
+      var storedEmail = readRealm.query<UserModel>('email == "$enteredEmail"');
+      if (storedEmail.isNotEmpty) {
+        var user = storedEmail[0];
+        // Check if the entered password matches the stored password
+        if (user.password == enteredPassword) {
+          readRealm.write(() {
+            user.loggedIn = true;
+          });
+          final currentUserProvider = Provider.of<CurrentUserProvider>(context, listen: false);
+          currentUserProvider.setCurrentUserId(user.id.hexString);
+          readRealm.close();
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const HabitStatus()),
+          );
+          return;
+        }
       }
+      readRealm.close();
+    } catch (e) {
+      print('Error occurred: $e');
     }
 
     // If no user found or password doesn't match, show sign-in failed dialog

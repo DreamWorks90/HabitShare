@@ -1,13 +1,10 @@
 import 'package:realm/realm.dart';
-part 'user.g.dart';
+part 'friends.g.dart';
 
 @RealmModel()
-class _UserModel {
+class _FriendsModel {
   @PrimaryKey()
   late ObjectId id;
   late final String name;
-  late final String email;
-  late String password;
   late  int contactNumber;
-  late bool loggedIn = true;
 }

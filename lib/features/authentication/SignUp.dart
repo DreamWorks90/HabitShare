@@ -18,7 +18,8 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
+  final TextEditingController _contactNumberController = TextEditingController();
+final MongoDBService mongoDBService = MongoDBService();
   String? _validateUsername(String? value) {
     if (value == null || value.isEmpty) {
       return 'Username is required';
@@ -50,11 +51,27 @@ class _SignUpState extends State<SignUp> {
     return null;
   }
 
+  String? _validateContactNumber(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Contact number is required';
+    }
+    if (value.length != 10) {
+      return 'Contact number must be 10 digits';
+    }
+     if (!value.contains(RegExp(r'^[0-9]+$'))) {
+     return 'Invalid contact number format';
+     }
+    return null;
+  }
+
+
   void _performSignup() async {
     if (_formKey.currentState!.validate()) {
       final enteredName = _usernameController.text;
       final enteredEmail = _emailController.text;
       final enteredPassword = _passwordController.text;
+      final enteredContactNumber =_contactNumberController.text;
+
 
       // Add a new user to the Realm.
       final config = Configuration.local([UserModel.schema]);
@@ -65,7 +82,7 @@ class _SignUpState extends State<SignUp> {
       if (storedUser.isEmpty) {
         // Update the password for the user
         UserModel newUser =
-            UserModel(ObjectId(), enteredName, enteredEmail, enteredPassword);
+            UserModel(ObjectId(), enteredName, enteredEmail, enteredPassword,int.parse(enteredContactNumber));
         realm.write(() {
           realm.add(newUser);
         });
@@ -89,7 +106,7 @@ class _SignUpState extends State<SignUp> {
                 TextButton(
                   onPressed: () {
                     // Push user details to MongoDB
-                    pushUserToMongoDB();
+                    pushUserToMongoDB(mongoDBService.db);
                     Navigator.of(dialogContext).pop();
                     Navigator.push(
                         context,
@@ -226,6 +243,32 @@ class _SignUpState extends State<SignUp> {
                       ),
                     ),
                     validator: _validatePassword,
+                  ),
+                  const SizedBox(height: 16.0),
+                  TextFormField(
+                    controller: _contactNumberController,
+                    decoration: const InputDecoration(
+                      labelText: 'ContactNumber',
+                      hintText: 'Enter your ContactNumber',
+                      prefixIcon: Icon(
+                        Icons.phone,
+                        color: primaryColor,
+                      ),
+                      border: OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: primaryColor),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red),
+                      ),
+                    ),
+                    validator: _validateContactNumber,
                   ),
                   const SizedBox(height: 40.0),
                   ElevatedButton(
