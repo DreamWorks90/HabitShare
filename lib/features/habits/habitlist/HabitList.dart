@@ -312,149 +312,39 @@ class _HabitListState extends State<HabitList> {
                                       borderRadius: BorderRadius.circular(10.0),
                                     ),
                                     child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
+                                      padding: const EdgeInsets.only(
+                                          top: 16, right: 16, bottom: 16),
                                       child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                            CrossAxisAlignment.center,
                                         children: [
-                                          Expanded(
-                                            flex:
-                                                0, // Set flex to 0 to ensure it only takes the space needed
-                                            child: Container(
-                                              height: 80,
-                                              decoration: BoxDecoration(
-                                                border: Border(
-                                                  left: BorderSide(
-                                                    color: getBorderColor(habit
-                                                        .habitType), // Your border color here
-
-                                                    width: 5,
-                                                    // Adjust the width of the border
-                                                  ),
+                                          Container(
+                                            height: 80,
+                                            decoration: BoxDecoration(
+                                              border: Border(
+                                                left: BorderSide(
+                                                  color: getBorderColor(habit
+                                                      .habitType), // Border color
+                                                  width: 5.0, // Border width
                                                 ),
                                               ),
-                                              padding: EdgeInsets.only(
-                                                  left:
-                                                      1.0), // Adjust padding as needed
-                                              child: Radio(
-                                                value: habit,
-                                                groupValue: completedHabits
-                                                        .contains(habit)
-                                                    ? habit
-                                                    : null,
-                                                onChanged: (selectedHabit) {
-                                                  showDialog(
-                                                    context: context,
-                                                    builder: (BuildContext
-                                                        dialogContext) {
-                                                      return AlertDialog(
-                                                        title: const Text(
-                                                            'Confirm Habit Completion'),
-                                                        content: const Text(
-                                                            'Have you completed this habit?'),
-                                                        actions: <Widget>[
-                                                          TextButton(
-                                                            child: const Text(
-                                                                'Cancel'),
-                                                            onPressed: () {
-                                                              Navigator.of(
-                                                                      dialogContext)
-                                                                  .pop(); // Close the dialog
-                                                            },
-                                                          ),
-                                                          TextButton(
-                                                            child: const Text(
-                                                                'Yes'),
-                                                            onPressed:
-                                                                () async {
-                                                              realm.write(() {
-                                                                habit.isCompletedToday =
-                                                                    true;
-                                                                habit.streak++;
-                                                                habit
-                                                                    .totalCompletedDays++;
-
-                                                                // Update completionDate with the current date
-                                                                habit.completionDate =
-                                                                    DateTime.now()
-                                                                        .toString();
-                                                                // Increment streak if applicable
-                                                                if (habit.frequency == 'HabitFrequency.daily' ||
-                                                                    habit.frequency ==
-                                                                        'HabitFrequency.weekend' ||
-                                                                    habit.frequency ==
-                                                                        'HabitFrequency.weekly') {
-                                                                  // Check streak continuation
-                                                                  if (isStreakContinued(
-                                                                      habit)) {
-                                                                    habit
-                                                                        .streak++;
-                                                                  }
-                                                                } else {
-                                                                  // For other frequencies, reset streak
-                                                                  habit.streak =
-                                                                      1;
-                                                                }
-
-                                                                if (habit
-                                                                        .termDate !=
-                                                                    null) {
-                                                                  // Check if termDate is available
-                                                                  final DateTime
-                                                                      currentDate =
-                                                                      DateTime
-                                                                          .now();
-                                                                  final DateTime
-                                                                      termDate =
-                                                                      DateTime.parse(
-                                                                          habit
-                                                                              .termDate!);
-                                                                  // If the current date is before or equal to the term date, increment totalCompletedDays
-                                                                  if (currentDate
-                                                                          .isBefore(
-                                                                              termDate) ||
-                                                                      currentDate
-                                                                          .isAtSameMomentAs(
-                                                                              termDate)) {
-                                                                    habit.totalCompletedDays +=
-                                                                        1;
-                                                                  }
-                                                                } else {
-                                                                  // If termDate is null, always increment totalCompletedDays
-                                                                  habit.totalCompletedDays +=
-                                                                      1;
-                                                                }
-                                                                // Update completionDate with the current date
-                                                                habit.completionDate =
-                                                                    DateTime.now()
-                                                                        .toString();
-                                                              });
-
-                                                              // Move habit from active to completed list
-                                                              setState(() {
-                                                                activeHabits.remove(
-                                                                    selectedHabit);
-                                                                completedHabits.add(
-                                                                    selectedHabit!);
-                                                              });
-                                                              // Update habit in Realm (if needed)
-                                                              Navigator.of(
-                                                                      dialogContext)
-                                                                  .pop(); // Close the dialog
-                                                            },
-                                                          ),
-                                                        ],
-                                                      );
-                                                    },
-                                                  );
-                                                },
-                                              ),
+                                            ),
+                                            child: Radio(
+                                              value: habit,
+                                              groupValue: completedHabits
+                                                      .contains(habit)
+                                                  ? habit
+                                                  : null,
+                                              onChanged: (selectedHabit) {
+                                                // Your onChanged logic here
+                                              },
                                             ),
                                           ),
                                           SizedBox(width: 5.0),
                                           Expanded(
-                                            flex:
-                                                1, // Ensure the habit details take the remaining space
+                                            flex: 1,
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,

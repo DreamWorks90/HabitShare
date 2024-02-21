@@ -1,4 +1,5 @@
 import 'package:HabitShare/features/splash/SplashPage.dart';
+import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter/material.dart';
 import 'Mongo DB/mongoloid.dart';
 
@@ -29,7 +30,7 @@ class HabitTrackerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: SplashPage(),
+      body: HabitStatus(),
     );
   }
 }
