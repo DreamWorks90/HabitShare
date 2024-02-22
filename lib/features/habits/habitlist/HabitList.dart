@@ -5,7 +5,6 @@ import 'package:HabitShare/features/habits/EditHabit/edit_habit_form.dart';
 import 'package:HabitShare/features/habits/habitlist/sharewithfriends.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realm/realm.dart';
@@ -306,7 +305,7 @@ class _HabitListState extends State<HabitList> {
                                   child: Card(
                                     elevation: 4.0,
                                     color: getCardColor(habit.habitType),
-                                    margin: EdgeInsets.symmetric(
+                                    margin: const EdgeInsets.symmetric(
                                         vertical: 8.0, horizontal: 16.0),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10.0),
@@ -323,10 +322,12 @@ class _HabitListState extends State<HabitList> {
                                           Container(
                                             height: 80,
                                             decoration: BoxDecoration(
+                                              shape: BoxShape.rectangle,
                                               border: Border(
                                                 left: BorderSide(
-                                                  color: getBorderColor(habit
-                                                      .habitType), // Border color
+                                                  color: getBorderColor(
+                                                      habit.habitType),
+                                                  // Border color
                                                   width: 5.0, // Border width
                                                 ),
                                               ),
@@ -338,11 +339,113 @@ class _HabitListState extends State<HabitList> {
                                                   ? habit
                                                   : null,
                                               onChanged: (selectedHabit) {
-                                                // Your onChanged logic here
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (BuildContext
+                                                      dialogContext) {
+                                                    return AlertDialog(
+                                                      title: const Text(
+                                                          'Confirm Habit Completion'),
+                                                      content: const Text(
+                                                          'Have you completed this habit?'),
+                                                      actions: <Widget>[
+                                                        TextButton(
+                                                          child: const Text(
+                                                              'Cancel'),
+                                                          onPressed: () {
+                                                            Navigator.of(
+                                                                    dialogContext)
+                                                                .pop(); // Close the dialog
+                                                          },
+                                                        ),
+                                                        TextButton(
+                                                          child:
+                                                              const Text('Yes'),
+                                                          onPressed: () async {
+                                                            realm.write(() {
+                                                              habit.isCompletedToday =
+                                                                  true;
+                                                              habit.streak++;
+                                                              habit
+                                                                  .totalCompletedDays++;
+
+                                                              // Update completionDate with the current date
+                                                              habit.completionDate =
+                                                                  DateTime.now()
+                                                                      .toString();
+                                                              // Increment streak if applicable
+                                                              if (habit.frequency == 'HabitFrequency.daily' ||
+                                                                  habit.frequency ==
+                                                                      'HabitFrequency.weekend' ||
+                                                                  habit.frequency ==
+                                                                      'HabitFrequency.weekly') {
+                                                                // Check streak continuation
+                                                                if (isStreakContinued(
+                                                                    habit)) {
+                                                                  habit
+                                                                      .streak++;
+                                                                }
+                                                              } else {
+                                                                // For other frequencies, reset streak
+                                                                habit.streak =
+                                                                    1;
+                                                              }
+
+                                                              if (habit
+                                                                      .termDate !=
+                                                                  null) {
+                                                                // Check if termDate is available
+                                                                final DateTime
+                                                                    currentDate =
+                                                                    DateTime
+                                                                        .now();
+                                                                final DateTime
+                                                                    termDate =
+                                                                    DateTime.parse(
+                                                                        habit
+                                                                            .termDate!);
+                                                                // If the current date is before or equal to the term date, increment totalCompletedDays
+                                                                if (currentDate
+                                                                        .isBefore(
+                                                                            termDate) ||
+                                                                    currentDate
+                                                                        .isAtSameMomentAs(
+                                                                            termDate)) {
+                                                                  habit.totalCompletedDays +=
+                                                                      1;
+                                                                }
+                                                              } else {
+                                                                // If termDate is null, always increment totalCompletedDays
+                                                                habit.totalCompletedDays +=
+                                                                    1;
+                                                              }
+                                                              // Update completionDate with the current date
+                                                              habit.completionDate =
+                                                                  DateTime.now()
+                                                                      .toString();
+                                                            });
+
+                                                            // Move habit from active to completed list
+                                                            setState(() {
+                                                              activeHabits.remove(
+                                                                  selectedHabit);
+                                                              completedHabits.add(
+                                                                  selectedHabit!);
+                                                            });
+                                                            // Update habit in Realm (if needed)
+                                                            Navigator.of(
+                                                                    dialogContext)
+                                                                .pop(); // Close the dialog
+                                                          },
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
                                               },
                                             ),
                                           ),
-                                          SizedBox(width: 5.0),
+                                          const SizedBox(width: 5.0),
                                           Expanded(
                                             flex: 1,
                                             child: Column(
@@ -358,7 +461,7 @@ class _HabitListState extends State<HabitList> {
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
-                                                SizedBox(height: 4.0),
+                                                const SizedBox(height: 4.0),
                                                 Text(
                                                   habit.description,
                                                   style: TextStyle(
@@ -369,44 +472,44 @@ class _HabitListState extends State<HabitList> {
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                 ),
-                                                SizedBox(height: 12.0),
+                                                const SizedBox(height: 12.0),
                                                 Row(
                                                   children: [
                                                     SvgPicture.asset(
                                                       'assets/images/streak.svg',
                                                       height: 20,
                                                     ),
-                                                    SizedBox(width: 5),
+                                                    const SizedBox(width: 5),
                                                     if (habit.streak >= 3)
                                                       Text(
                                                         habit.streak.toString(),
-                                                        style: TextStyle(
+                                                        style: const TextStyle(
                                                           fontSize: 20,
                                                           fontWeight:
                                                               FontWeight.bold,
                                                         ),
                                                       ),
-                                                    SizedBox(width: 15),
+                                                    const SizedBox(width: 15),
                                                     SvgPicture.asset(
                                                       'assets/images/calendar.svg',
                                                       height: 20,
                                                     ),
-                                                    SizedBox(width: 5),
+                                                    const SizedBox(width: 5),
                                                     Text(
                                                       habit.frequency
                                                           .toString()
                                                           .split('.')
                                                           .last,
-                                                      style: TextStyle(
+                                                      style: const TextStyle(
                                                         fontSize: 20,
                                                         fontWeight:
                                                             FontWeight.bold,
                                                       ),
                                                     ),
-                                                    SizedBox(width: 10),
+                                                    const SizedBox(width: 15),
                                                     Text(
                                                       percentage,
-                                                      style: TextStyle(
+                                                      style: const TextStyle(
                                                         fontSize: 20,
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -440,7 +543,7 @@ class _HabitListState extends State<HabitList> {
                                                     context,
                                                     MaterialPageRoute(
                                                         builder: (context) =>
-                                                            ShareWithFriends(
+                                                            const ShareWithFriends(
                                                               selectedFriends: [],
                                                             )));
                                               }
@@ -506,16 +609,17 @@ class _HabitListState extends State<HabitList> {
                               final completedHabit = completedHabits[index];
 
                               return Card(
+                                elevation: 4.0,
+                                color: getCardColor(completedHabit.habitType),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                color: getCardColor(completedHabit.habitType),
                                 borderOnForeground: true,
-                                elevation: 4.0,
                                 margin: const EdgeInsets.symmetric(
                                     horizontal: 17.0, vertical: 10.0),
                                 child: Padding(
-                                  padding: const EdgeInsets.all(10.0),
+                                  padding: const EdgeInsets.only(
+                                      top: 16, right: 16, bottom: 16),
                                   child: Row(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -532,7 +636,7 @@ class _HabitListState extends State<HabitList> {
                                           ),
                                         ),
                                       ),
-                                      SizedBox(width: 15),
+                                      const SizedBox(width: 15),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
@@ -548,31 +652,33 @@ class _HabitListState extends State<HabitList> {
                                               ),
                                               textAlign: TextAlign.start,
                                             ),
-                                            SizedBox(height: 4.0),
+                                            const SizedBox(height: 4.0),
                                             Text(
                                               completedHabit.description,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 15,
                                               ),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
-                                            SizedBox(height: 4.0),
+                                            const SizedBox(height: 4.0),
                                             Row(
                                               children: [
                                                 SvgPicture.asset(
                                                   'assets/images/streak.svg',
                                                   height: 20,
                                                 ),
-                                                SizedBox(width: 4.0),
-                                                Text(
-                                                  completedHabit.streak
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
+                                                const SizedBox(width: 4.0),
+                                                if (completedHabit.streak >= 3)
+                                                  Text(
+                                                    completedHabit.streak
+                                                        .toString(),
+                                                    style: const TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
                                                   ),
-                                                ),
                                               ],
                                             )
                                           ],
