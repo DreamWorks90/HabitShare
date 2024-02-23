@@ -7,6 +7,7 @@ import 'package:realm/realm.dart';
 import 'package:HabitShare/Mongo DB/mongoloid.dart';
 import 'package:HabitShare/Realm/invitation.dart';
 
+import '../Friends.dart';
 import 'current_user_provider.dart';
 
 class ContactPage extends StatefulWidget {
@@ -157,6 +158,7 @@ class _ContactPageState extends State<ContactPage> {
                       user['contactNumber'] != null &&
                           user['contactNumber'].toString() == contactNumber);
                       final inviterId = currentUserProvider.currentUserId;
+                      final inviterName = currentUserProvider.currentUserName;
                       if (inviterId != null) {
                         String? inviteeId;
                         if (contactExists) {
@@ -178,6 +180,11 @@ class _ContactPageState extends State<ContactPage> {
                         await pushInvitationToMongoDB(mongoDBService.db);
                         if (contactExists) {
                           print('Invitation added: $inviterId,$inviteeId,$contactNumber');
+                          final notification = NotificationModel(
+                            title: 'New Friend Request',
+                            description: 'You have a new friend request from $inviterName.',
+                          );
+                          Provider.of<NotificationProvider>(context, listen: false).sendNotification(notification);
                         } else {
                           print('Invitation added for non-existing user: $inviterId,null,$contactNumber');
                         }
@@ -267,6 +274,7 @@ class _ContactPageState extends State<ContactPage> {
     );
   }
 }
+
 
 class SelectedFriendsPage extends StatelessWidget {
   final List<Contact> selectedFriends;

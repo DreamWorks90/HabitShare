@@ -10,4 +10,6 @@ class _UserModel {
   late String password;
   late  int contactNumber;
   late bool loggedIn = true;
+  late String enteredSecurityQuestion;
+  late String enteredSecurityAnswer;
 }

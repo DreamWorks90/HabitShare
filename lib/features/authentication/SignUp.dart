@@ -4,8 +4,10 @@ import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
 import '../../Mongo DB/mongoloid.dart';
+import '../friends/addfriends/current_user_provider.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -18,8 +20,14 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _contactNumberController = TextEditingController();
-final MongoDBService mongoDBService = MongoDBService();
+  final TextEditingController _contactNumberController =
+  TextEditingController();
+  final MongoDBService mongoDBService = MongoDBService();
+  final TextEditingController _securityQuestionController =
+  TextEditingController();
+  final TextEditingController _securityAnswerController =
+  TextEditingController();
+
   String? _validateUsername(String? value) {
     if (value == null || value.isEmpty) {
       return 'Username is required';
@@ -58,20 +66,20 @@ final MongoDBService mongoDBService = MongoDBService();
     if (value.length != 10) {
       return 'Contact number must be 10 digits';
     }
-     if (!value.contains(RegExp(r'^[0-9]+$'))) {
-     return 'Invalid contact number format';
-     }
+    if (!value.contains(RegExp(r'^[0-9]+$'))) {
+      return 'Invalid contact number format';
+    }
     return null;
   }
-
 
   void _performSignup() async {
     if (_formKey.currentState!.validate()) {
       final enteredName = _usernameController.text;
       final enteredEmail = _emailController.text;
       final enteredPassword = _passwordController.text;
-      final enteredContactNumber =_contactNumberController.text;
-
+      final enteredContactNumber = _contactNumberController.text;
+      final enteredSecurityQuestion = _securityQuestionController.text;
+      final enteredSecurityAnswer = _securityAnswerController.text;
 
       // Add a new user to the Realm.
       final config = Configuration.local([UserModel.schema]);
@@ -81,8 +89,14 @@ final MongoDBService mongoDBService = MongoDBService();
       final storedUser = realm.query<UserModel>('email == "$enteredEmail" ');
       if (storedUser.isEmpty) {
         // Update the password for the user
-        UserModel newUser =
-            UserModel(ObjectId(), enteredName, enteredEmail, enteredPassword,int.parse(enteredContactNumber));
+        UserModel newUser = UserModel(
+            ObjectId(),
+            enteredName,
+            enteredEmail,
+            enteredPassword,
+            int.parse(enteredContactNumber),
+            enteredSecurityQuestion,
+            enteredSecurityAnswer);
         realm.write(() {
           realm.add(newUser);
         });
@@ -90,11 +104,12 @@ final MongoDBService mongoDBService = MongoDBService();
         // Query the Realm to get all users
         final users = realm.all<UserModel>();
         final usersList = users.toList();
-
         // Query the Realm to check if the user exists
         for (final user in usersList) {
           print(
               'User details added to Realm: ${user.name} ${user.email} ${user.password}');
+          final currentUserProvider = Provider.of<CurrentUserProvider>(context, listen: false);
+          currentUserProvider.setCurrentUser(user.id.hexString,user.name);
         }
         showDialog(
           context: context,
@@ -270,6 +285,58 @@ final MongoDBService mongoDBService = MongoDBService();
                     ),
                     validator: _validateContactNumber,
                   ),
+                  const SizedBox(height: 16.0),
+                  TextFormField(
+                    controller: _securityQuestionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Security Question',
+                      hintText: 'Question?',
+                      prefixIcon: Icon(
+                        Icons.question_answer,
+                        color: primaryColor,
+                      ),
+                      border: OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: primaryColor),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red),
+                      ),
+                    ),
+                    validator: _validateSecurityQuestion,
+                  ),
+                  const SizedBox(height: 16.0),
+                  TextFormField(
+                    controller: _securityAnswerController,
+                    decoration: const InputDecoration(
+                      labelText: 'Security Answer',
+                      hintText: 'Answer!',
+                      prefixIcon: Icon(
+                        Icons.question_answer_outlined,
+                        color: primaryColor,
+                      ),
+                      border: OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: primaryColor),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red),
+                      ),
+                    ),
+                    validator: _validateSecurityAnswer,
+                  ),
                   const SizedBox(height: 40.0),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -302,4 +369,21 @@ final MongoDBService mongoDBService = MongoDBService();
       ),
     );
   }
+}
+
+String? _validateSecurityQuestion(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'Security question is required';
+  }
+  // You can add additional validation if needed
+  return null;
+}
+
+// Validation function for security answer
+String? _validateSecurityAnswer(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'Security answer is required';
+  }
+  // You can add additional validation if needed
+  return null;
 }

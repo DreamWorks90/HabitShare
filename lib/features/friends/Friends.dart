@@ -1,3 +1,4 @@
+import 'package:HabitShare/features/notification/notification.dart';
 import 'package:flutter/material.dart';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/friends/addfriends/contact.dart';
@@ -16,7 +17,7 @@ class FriendsTab extends StatefulWidget {
 class _FriendsTabState extends State<FriendsTab> {
   bool isPopoverVisible = false;
   List<Contact> selectedFriends = [];
-  bool hasNotifications = false;
+
 
   // Function to toggle the visibility of the popover
   void togglePopover() {
@@ -37,18 +38,9 @@ class _FriendsTabState extends State<FriendsTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: primaryColor,
         actions: <Widget>[
-          IconButton(
-            icon: Icon(
-              Icons.notifications,
-              color: hasNotifications ? Colors.red : null,
-            ),
-            onPressed: () {
-              // Implement the action when notification icon is pressed
-              // For example, navigate to a notification page
-            },
-          ),
           IconButton(
             icon: const Icon(Icons.group_add),
             iconSize: 25,
@@ -94,7 +86,7 @@ class _FriendsTabState extends State<FriendsTab> {
                             List<Contact>? result =
                             await Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) => ContactPage(),
+                                builder: (context) => const ContactPage(),
                               ),
                             );
                             if (result != null) {
@@ -162,4 +154,9 @@ class _FriendsTabState extends State<FriendsTab> {
       print('Error sharing: $e');
     }
   }
+}
+class NotificationModel {
+  final String title;
+  final String description;
+  NotificationModel({required this.title, required this.description});
 }

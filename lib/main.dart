@@ -9,9 +9,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //await syncLocalDatabaseWithMongoDB();
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => CurrentUserProvider(),
-      child: MyApp(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CurrentUserProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()), // Provide the NotificationProvider
+      ],
+      child: const MyApp(),
     ),
   );
 }

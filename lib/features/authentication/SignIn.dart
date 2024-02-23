@@ -245,7 +245,7 @@ final MongoDBService mongoDBService=MongoDBService();
             user.loggedIn = true;
           });
           final currentUserProvider = Provider.of<CurrentUserProvider>(context, listen: false);
-          currentUserProvider.setCurrentUserId(user.id.hexString);
+          currentUserProvider.setCurrentUser(user.id.hexString,user.name);
           readRealm.close();
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const HabitStatus()),

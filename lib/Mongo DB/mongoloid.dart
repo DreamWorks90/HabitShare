@@ -8,9 +8,11 @@ class MongoDBService {
   late final Db db;
   bool _isDatabaseOpened = false;
   List<Map<String, dynamic>> usersFromMongo = [];
+
   MongoDBService() {
     initDatabase();
   }
+
   Future<void> initDatabase() async {
     db = await Db.create('mongodb+srv://HabitShare:habitshare@cluster0.3yp4ekk.mongodb.net/HabitShare?retryWrites=true&w=majority');
 
@@ -56,6 +58,8 @@ Future<void> pushUserToMongoDB(Db db) async {
       'password': user.password,
       'contactNumber': user.contactNumber,
       'loggedIn': user.loggedIn,
+      'securityQuestion': user.enteredSecurityQuestion,
+      'securityAnswer': user.enteredSecurityAnswer,
     };
   }).toList();
   // Check for duplicate emails in MongoDB

@@ -7,8 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
 import 'package:table_calendar/table_calendar.dart';
+import '../../friends/addfriends/current_user_provider.dart';
+import '../../notification/notification.dart';
 import 'habit_list_utils.dart';
 
 class HabitList extends StatefulWidget {
@@ -24,12 +27,20 @@ class _HabitListState extends State<HabitList> {
   List<HabitModel> activeHabits = [];
   Map<DateTime, List<HabitModel>> habits = {};
   int _currentSegment = 0; // Added to keep track of the selected segment
+  bool hasNotifications = false;
+  bool isNotificationPopoverVisible = false;
 
   @override
   void initState() {
     super.initState();
     _initializeRealm();
       }
+  void togglePopover() {
+    setState(() {
+      isNotificationPopoverVisible = !isNotificationPopoverVisible;
+    });
+  }
+
 
   void _refreshHabitList() {
     setState(() {
@@ -124,6 +135,9 @@ class _HabitListState extends State<HabitList> {
           }
         }
         }
+      final notificationProvider = Provider.of<NotificationProvider>(context);
+      final notifications = notificationProvider.notifications;
+
       return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -141,8 +155,84 @@ class _HabitListState extends State<HabitList> {
               ),
             ],
           ),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(
+                Icons.notifications,
+                color: hasNotifications ? Colors.red : null,
+              ),
+              onPressed: togglePopover,
+                /*Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const NotificationList()));*/
+
+            ),
+
+          ],
+
         ),
-        body: SizedBox(
+        body: isNotificationPopoverVisible?Stack(
+          children: [Center(
+        child: Container(
+        //margin: EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(16),
+        constraints: const BoxConstraints(maxHeight: 550), // Set max height here
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Notifications',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: ListView.builder(
+                itemCount: notifications.length,
+                itemBuilder: (context, index) {
+                  final notification = notifications[index];
+                  return ListTile(
+                    title: Text(notification.title),
+                    subtitle: Text(notification.description),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.check),
+                          onPressed: () {
+                            // Handle accept action
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            // Handle reject action
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+    ]
+    )
+        :SizedBox(
           height: double.infinity,
           child: Column(
             children: [
@@ -151,6 +241,7 @@ class _HabitListState extends State<HabitList> {
                 lastDay: DateTime.utc(2030, 3, 14),
                 focusedDay: selectedDate,
                 rowHeight: 43,
+
                 headerStyle: const HeaderStyle(
                     formatButtonVisible: false, titleCentered: true),
                 availableGestures: AvailableGestures.all,

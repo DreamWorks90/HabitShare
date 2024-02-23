@@ -2,9 +2,9 @@
 
 part of 'user.dart';
 
-// **************************************************************************
+// **************************
 // RealmObjectGenerator
-// **************************************************************************
+// **************************
 
 // ignore_for_file: type=lint
 class UserModel extends _UserModel
@@ -16,7 +16,9 @@ class UserModel extends _UserModel
       String name,
       String email,
       String password,
-      int contactNumber, {
+      int contactNumber,
+      String enteredSecurityQuestion,
+      String enteredSecurityAnswer, {
         bool loggedIn = true,
       }) {
     if (!_defaultsSet) {
@@ -30,6 +32,9 @@ class UserModel extends _UserModel
     RealmObjectBase.set(this, 'password', password);
     RealmObjectBase.set(this, 'contactNumber', contactNumber);
     RealmObjectBase.set(this, 'loggedIn', loggedIn);
+    RealmObjectBase.set(
+        this, 'enteredSecurityQuestion', enteredSecurityQuestion);
+    RealmObjectBase.set(this, 'enteredSecurityAnswer', enteredSecurityAnswer);
   }
 
   UserModel._();
@@ -68,6 +73,20 @@ class UserModel extends _UserModel
   set loggedIn(bool value) => RealmObjectBase.set(this, 'loggedIn', value);
 
   @override
+  String get enteredSecurityQuestion =>
+      RealmObjectBase.get<String>(this, 'enteredSecurityQuestion') as String;
+  @override
+  set enteredSecurityQuestion(String value) =>
+      RealmObjectBase.set(this, 'enteredSecurityQuestion', value);
+
+  @override
+  String get enteredSecurityAnswer =>
+      RealmObjectBase.get<String>(this, 'enteredSecurityAnswer') as String;
+  @override
+  set enteredSecurityAnswer(String value) =>
+      RealmObjectBase.set(this, 'enteredSecurityAnswer', value);
+
+  @override
   Stream<RealmObjectChanges<UserModel>> get changes =>
       RealmObjectBase.getChanges<UserModel>(this);
 
@@ -85,6 +104,8 @@ class UserModel extends _UserModel
       SchemaProperty('password', RealmPropertyType.string),
       SchemaProperty('contactNumber', RealmPropertyType.int),
       SchemaProperty('loggedIn', RealmPropertyType.bool),
+      SchemaProperty('enteredSecurityQuestion', RealmPropertyType.string),
+      SchemaProperty('enteredSecurityAnswer', RealmPropertyType.string),
     ]);
   }
 }
