@@ -1,9 +1,11 @@
 import 'package:HabitShare/Realm/user/user.dart';
+import 'package:HabitShare/features/friends/addfriends/current_user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
 import '../../Mongo DB/mongoloid.dart';
 
@@ -107,6 +109,9 @@ class _SignUpState extends State<SignUp> {
         for (final user in usersList) {
           print(
               'User details added to Realm: ${user.name} ${user.email} ${user.password}');
+          final currentUserProvider =
+              Provider.of<CurrentUserProvider>(context, listen: false);
+          currentUserProvider.setCurrentUser(user.id.hexString, user.name);
         }
         showDialog(
           context: context,

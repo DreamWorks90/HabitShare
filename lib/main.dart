@@ -1,12 +1,24 @@
 import 'package:HabitShare/features/splash/SplashPage.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'Mongo DB/mongoloid.dart';
+import 'features/friends/addfriends/current_user_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //await syncLocalDatabaseWithMongoDB();
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CurrentUserProvider()),
+        ChangeNotifierProvider(
+            create: (_) =>
+                NotificationProvider()), // Provide the NotificationProvider
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -30,7 +42,7 @@ class HabitTrackerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: HabitStatus(),
+      body: SplashPage(),
     );
   }
 }

@@ -98,6 +98,8 @@ Future<void> pushInvitationToMongoDB(Db db) async {
 }
 
 Future<void> pushHabitsToMongoDB(Db db) async {
+  final config = Configuration.local([HabitModel.schema]);
+  final realm = Realm(config);
   // Retrieve habit details from Realm
   final habits = realm.all<HabitModel>();
   final habitList = habits.map((habit) {

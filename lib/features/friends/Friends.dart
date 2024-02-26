@@ -36,6 +36,7 @@ class _FriendsTabState extends State<FriendsTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: primaryColor,
         actions: <Widget>[
           IconButton(

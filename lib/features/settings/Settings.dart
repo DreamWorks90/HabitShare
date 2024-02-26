@@ -1,9 +1,11 @@
 import 'package:HabitShare/features/authentication/SignIn.dart';
 import 'package:HabitShare/features/settings/profile.dart';
 import 'package:flutter/material.dart';
+import 'package:realm/realm.dart';
 import 'dart:io';
 
 import '../../Constants.dart';
+import '../../Realm/user/user.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -16,11 +18,13 @@ class _SettingsPageState extends State<SettingsPage> {
   String username = 'Username';
   File? _originalImageFile;
   File? _editedImageFile;
+  late UserModel _currentUser;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Settings', style: appbarTextStyle),
         backgroundColor: primaryColor,
       ),
@@ -143,6 +147,16 @@ class _SettingsPageState extends State<SettingsPage> {
             MaterialPageRoute(builder: (context) => const ContactUsPage()));
         break;
       case 'Log Out':
+        final config = Configuration.local([UserModel.schema]);
+        final realm = Realm(config);
+        //final users = realm.all<UserModel>();
+        final loggedInUser = realm.query<UserModel>('loggedIn == true');
+        if (loggedInUser != null) {
+          // Update the loggedIn status to false
+          realm.write(() {
+            loggedInUser[0].loggedIn = false;
+          });
+        }
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => const SignIn()));
         break;

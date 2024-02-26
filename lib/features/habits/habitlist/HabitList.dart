@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/Realm/habit.dart';
+import 'package:HabitShare/features/friends/addfriends/current_user_provider.dart';
 import 'package:HabitShare/features/habits/EditHabit/edit_habit_form.dart';
 import 'package:HabitShare/features/habits/habitlist/sharewithfriends.dart';
+import 'package:HabitShare/features/notification/notification.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'habit_list_utils.dart';
@@ -26,11 +29,19 @@ class _HabitListState extends State<HabitList> {
   Map<DateTime, List<HabitModel>> habits = {};
   int _currentSegment = 0;
   int streak = 0;
+  bool isNotificationPopoverVisible = false;
+  bool hasNotifications = false;
 
   @override
   void initState() {
     super.initState();
     _initializeRealm();
+  }
+
+  void togglePopover() {
+    setState(() {
+      isNotificationPopoverVisible = !isNotificationPopoverVisible;
+    });
   }
 
   void _refreshHabitList() {
@@ -129,6 +140,9 @@ class _HabitListState extends State<HabitList> {
           }
         }
       }
+      final notificationProvider = Provider.of<NotificationProvider>(context);
+      final notifications = notificationProvider.notifications;
+
       return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -146,6 +160,19 @@ class _HabitListState extends State<HabitList> {
               ),
             ],
           ),
+          actions: <Widget>[
+            IconButton(
+                icon: Icon(
+                  Icons.notifications,
+                  color: hasNotifications ? Colors.red : null,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const NotificationList()));
+                }),
+          ],
         ),
         body: SizedBox(
           height: double.infinity,
