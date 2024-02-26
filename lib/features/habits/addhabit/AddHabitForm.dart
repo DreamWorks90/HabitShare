@@ -4,10 +4,8 @@ import 'package:animated_button_bar/animated_button_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
-
-import '../../../MongoDb/mongolocaldb.dart';
+import '../../../Mongo DB/mongoloid.dart';
 import '../../../Realm/habit.dart';
-
 import 'package:intl/intl.dart';
 import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
 import 'package:uuid/uuid.dart' as uuid;
@@ -22,6 +20,7 @@ class AddHabitForm extends StatefulWidget {
 
 class _AddHabitFormState extends State<AddHabitForm> {
   final RealmService realmService = RealmService();
+  final MongoDBService mongoDBService = MongoDBService();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   HabitFrequency? selectedFrequency;
@@ -37,8 +36,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
   String? completionDate;
   bool isCompletedToday = false;
   int totalCompletedDays = 0;
-
-
 
   @override
   void initState() {
@@ -321,7 +318,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     print(
                         'habit details added to Realm:  ${habit.id} ${habit.name} ${habit.description} ${habit.habitType}');
                   }
-
                   nameController.clear();
                   descriptionController.clear();
                   setState(() {
@@ -333,8 +329,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   if (selectedHabitType == null) {
                     print("please select habit type");
                   }
-                  pushHabitsToMongoDB();
-
+                  pushHabitsToMongoDB(mongoDBService.db);
                   Navigator.push(
                       context,
                       MaterialPageRoute(

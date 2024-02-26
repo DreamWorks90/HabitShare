@@ -27,9 +27,9 @@ class ShareContentScreen extends StatelessWidget {
   void shareContent() async {
     try {
       await FlutterShare.share(
-        title: 'Share Content',
-        text: 'Check out this link:',
-        linkUrl: 'https://example.com',
+        title: 'Invitation to Habit Share',
+        text: "Hey, I'd like you to join Habit Share app! Download it from [app store link]",
+        linkUrl: 'https://example.com',// Replace with HabitShare app's store link
       );
     } catch (e) {
       print('Error sharing: $e');
