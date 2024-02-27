@@ -6,6 +6,7 @@ import 'package:HabitShare/Realm/user/user.dart';
 
 class ResetPassword extends StatefulWidget {
   const ResetPassword({Key? key}) : super(key: key);
+
   @override
   State<ResetPassword> createState() => _ResetPasswordState();
 }
@@ -13,9 +14,13 @@ class ResetPassword extends StatefulWidget {
 class _ResetPasswordState extends State<ResetPassword> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
+
+  final TextEditingController _securityQuestionController =
       TextEditingController();
+  final TextEditingController _securityAnswerController =
+      TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
@@ -27,79 +32,45 @@ class _ResetPasswordState extends State<ResetPassword> {
     }
     return null;
   }
-
-  String? _validateNewPassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'New password is required';
-    }
-    if (value.length < 6) {
-      return 'Password must be at least 6 characters';
-    }
-    return null;
-  }
-
-  String? _validateConfirmPassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Confirm password is required';
-    }
-    if (value.length < 6) {
-      return 'Password must be at least 6 characters';
-    }
-    return null;
-  }
-
   void _resetPassword() async {
     final String enteredEmail = _emailController.text;
+    final String securityAnswer = _securityAnswerController.text;
     final String newPassword = _newPasswordController.text;
-    final String confirmPassword = _confirmPasswordController.text;
-
-    // Verify that newPassword and confirmPassword match.
-    if (newPassword != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text('New and Confirm Passwords do not match. Please try again.'),
-          duration: Duration(seconds: 3),
-        ),
-      );
-      return;
-    }
-
-    // Open the realm instance
     final config = Configuration.local([UserModel.schema]);
     final realm = Realm(config);
+    final storedUser = realm.query<UserModel>('email == "$enteredEmail"');
+    if (storedUser.isNotEmpty) {
+      // Fetch and display the security question
+      _securityQuestionController.text = storedUser[0].enteredSecurityQuestion;
 
-    // Retrieve the user with the specified email
-    var storedEmail = realm.query<UserModel>('email == "$enteredEmail"');
-
-    if (storedEmail.isNotEmpty) {
-      // Update the password for the user
-      realm.write(() {
-        storedEmail[0].password = newPassword;
-      });
-
-      // Show a success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password reset successfully!'),
-        ),
-      );
-
-      // Reset the form fields
-      _emailController.clear();
-      _newPasswordController.clear();
-      _confirmPasswordController.clear();
+      if (storedUser[0].enteredSecurityAnswer == securityAnswer) {
+        realm.write(() {
+          storedUser[0].password = newPassword;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Password reset successfully!'),
+          ),
+        );
+        _emailController.clear();
+        _securityQuestionController.clear();
+        _securityAnswerController.clear();
+        _newPasswordController.clear();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Incorrect security answer. Please try again.'),
+          ),
+        );
+      }
     } else {
-      // If user is not found, show an error message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Email not found. Please enter a valid email address.'),
-          duration: Duration(seconds: 3),
         ),
       );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,10 +116,54 @@ class _ResetPasswordState extends State<ResetPassword> {
                     ),
                   ),
                   validator: _validateEmail,
+
+                  onChanged: (value) {
+                    _securityQuestionController.clear();
+                    _securityAnswerController.clear();
+                  },
                 ),
-                const SizedBox(
-                  height: 20,
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _securityQuestionController,
+                  readOnly: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Security Question',
+                    border: OutlineInputBorder(),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                  ),
                 ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _securityAnswerController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Security Answer',
+                    hintText: 'Enter your security answer',
+                    prefixIcon: Icon(Icons.lock),
+                    border: OutlineInputBorder(),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Security answer is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: _newPasswordController,
                   obscureText: true,
@@ -170,33 +185,15 @@ class _ResetPasswordState extends State<ResetPassword> {
                       borderSide: BorderSide(color: Colors.red),
                     ),
                   ),
-                  validator: _validateNewPassword,
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Confirm Password',
-                    hintText: 'Reenter your new password',
-                    prefixIcon: Icon(Icons.remove_red_eye_sharp),
-                    border: OutlineInputBorder(),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.red),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.red),
-                    ),
-                  ),
-                  validator: _validateConfirmPassword,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'New password is required';
+                    }
+                    if (value.length < 6) {
+                      return 'Password must be at least 6 characters';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 40.0),
                 ElevatedButton(

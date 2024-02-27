@@ -20,6 +20,7 @@ class HabitModel extends _HabitModel
     String time,
     String startDate,
     String termDate,
+    int streak,
     String completionDate,
     bool isCompletedToday,
     int totalCompletedDays,
@@ -34,6 +35,7 @@ class HabitModel extends _HabitModel
     RealmObjectBase.set(this, 'time', time);
     RealmObjectBase.set(this, 'startDate', startDate);
     RealmObjectBase.set(this, 'termDate', termDate);
+    RealmObjectBase.set(this, 'streak', streak);
     RealmObjectBase.set(this, 'completionDate', completionDate);
     RealmObjectBase.set(this, 'isCompletedToday', isCompletedToday);
     RealmObjectBase.set(this, 'totalCompletedDays', totalCompletedDays);
@@ -100,6 +102,11 @@ class HabitModel extends _HabitModel
   set termDate(String value) => RealmObjectBase.set(this, 'termDate', value);
 
   @override
+  int get streak => RealmObjectBase.get<int>(this, 'streak') as int;
+  @override
+  set streak(int value) => RealmObjectBase.set(this, 'streak', value);
+
+  @override
   String get completionDate =>
       RealmObjectBase.get<String>(this, 'completionDate') as String;
   @override
@@ -143,6 +150,7 @@ class HabitModel extends _HabitModel
       SchemaProperty('time', RealmPropertyType.string),
       SchemaProperty('startDate', RealmPropertyType.string),
       SchemaProperty('termDate', RealmPropertyType.string),
+      SchemaProperty('streak', RealmPropertyType.int),
       SchemaProperty('completionDate', RealmPropertyType.string),
       SchemaProperty('isCompletedToday', RealmPropertyType.bool),
       SchemaProperty('totalCompletedDays', RealmPropertyType.int),

@@ -4,10 +4,8 @@ import 'package:animated_button_bar/animated_button_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
-
-import '../../../MongoDb/mongolocaldb.dart';
+import '../../../Mongo DB/mongoloid.dart';
 import '../../../Realm/habit.dart';
-
 import 'package:intl/intl.dart';
 import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
 import 'package:uuid/uuid.dart' as uuid;
@@ -37,8 +35,9 @@ class _AddHabitFormState extends State<AddHabitForm> {
   String? completionDate;
   bool isCompletedToday = false;
   int totalCompletedDays = 0;
-
-
+  int streak = 0;
+  late String lastCompletionDate;
+  final MongoDBService mongoDBService = MongoDBService();
 
   @override
   void initState() {
@@ -302,16 +301,21 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     termDate != null) {
                   // Save habit details to Realm
                   final habit = HabitModel(
-                      ObjectId(),
-                      habitUuid,
-                      habitLink,
-                      nameController.text,
-                      descriptionController.text,
-                      selectedHabitType!,
-                      selectedFrequency!.toString(),
-                      selectedTime!.toString(),
-                      startDate!,
-                      termDate!,completionDate ?? '',isCompletedToday,totalCompletedDays);
+                    ObjectId(),
+                    habitUuid,
+                    habitLink,
+                    nameController.text,
+                    descriptionController.text,
+                    selectedHabitType!,
+                    selectedFrequency!.toString(),
+                    selectedTime!.toString(),
+                    startDate!,
+                    termDate!,
+                    streak,
+                    completionDate ?? '',
+                    isCompletedToday,
+                    totalCompletedDays,
+                  );
                   await realmService.addHabit(habit);
                   var habits = realmService.getAllHabits();
                   final habitList = habits.toList();
@@ -321,7 +325,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
                     print(
                         'habit details added to Realm:  ${habit.id} ${habit.name} ${habit.description} ${habit.habitType}');
                   }
-
                   nameController.clear();
                   descriptionController.clear();
                   setState(() {
@@ -333,8 +336,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   if (selectedHabitType == null) {
                     print("please select habit type");
                   }
-                  pushHabitsToMongoDB();
-
+                  pushHabitsToMongoDB(mongoDBService.db);
                   Navigator.push(
                       context,
                       MaterialPageRoute(

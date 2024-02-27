@@ -5,11 +5,8 @@ import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter_share/flutter_share.dart';
 
 class FriendsTab extends StatefulWidget {
-  final List<Contact> selectedFriends;
-
   const FriendsTab({
     Key? key,
-    required this.selectedFriends,
   }) : super(key: key);
 
   @override
@@ -18,6 +15,7 @@ class FriendsTab extends StatefulWidget {
 
 class _FriendsTabState extends State<FriendsTab> {
   bool isPopoverVisible = false;
+  List<Contact> selectedFriends = [];
 
   // Function to toggle the visibility of the popover
   void togglePopover() {
@@ -26,11 +24,19 @@ class _FriendsTabState extends State<FriendsTab> {
     });
   }
 
+  void updateSelectedFriends(List<Contact> newSelectedFriends) {
+    setState(() {
+      selectedFriends = newSelectedFriends;
+      // Close the popover when friends are selected
+      isPopoverVisible = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final List<Contact> selectedFriends = widget.selectedFriends;
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: primaryColor,
         actions: <Widget>[
           IconButton(
@@ -73,13 +79,17 @@ class _FriendsTabState extends State<FriendsTab> {
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
+                                onPressed: () async {
+                                  // Update selectedFriends when ContactPage returns a result
+                                  List<Contact>? result =
+                                      await Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (context) => ContactPage(),
                                     ),
                                   );
+                                  if (result != null) {
+                                    updateSelectedFriends(result);
+                                  }
                                 },
                                 child: const Text(
                                   "Via Contact",
@@ -118,28 +128,66 @@ class _FriendsTabState extends State<FriendsTab> {
               itemCount: selectedFriends.length,
               itemBuilder: (context, index) {
                 Contact friend = selectedFriends[index];
-                return ListTile(
-                  title: Text(friend.displayName ?? ''),
-                  subtitle: Text(
-                    friend.phones?.isNotEmpty == true
-                        ? friend.phones!.first.value ?? ''
-                        : '',
+                return Card(
+                  margin: EdgeInsets.all(8),
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  color: Colors.white, // Background color of the card
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.person, // Add an icon for visual representation
+                      color: Colors.black, // Color of the icon
+                    ),
+                    title: Text(
+                      friend.displayName ?? '',
+                      style: TextStyle(
+                        color: Colors.black, // Text color
+                        fontWeight: FontWeight.bold, // Text weight
+                      ),
+                    ),
+                    subtitle: Text(
+                      friend.phones?.isNotEmpty == true
+                          ? friend.phones!.first.value ?? ''
+                          : '',
+                      style: TextStyle(
+                        color: Colors.black, // Text color
+                      ),
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(
+                        Icons.add, // Add icon for the add button
+                        color: Colors.black, // Icon color
+                      ),
+                      onPressed: () {
+                        // Handle onPressed event here
+                        // This function will be called when the add button is pressed
+                        // You can implement the logic to add habit here
+                      },
+                    ),
                   ),
                 );
               },
             ),
     );
   }
+
+  void shareContent() async {
+    try {
+      await FlutterShare.share(
+        title: 'Share Content',
+        text: 'Check out this link:',
+        linkUrl: 'https://example.com',
+      );
+    } catch (e) {
+      print('Error sharing: $e');
+    }
+  }
 }
 
-void shareContent() async {
-  try {
-    await FlutterShare.share(
-      title: 'Share Content',
-      text: 'Check out this link:',
-      linkUrl: 'https://example.com',
-    );
-  } catch (e) {
-    print('Error sharing: $e');
-  }
+class NotificationModel {
+  final String title;
+  final String description;
+  NotificationModel({required this.title, required this.description});
 }

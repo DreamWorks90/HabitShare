@@ -1,18 +1,25 @@
+import 'dart:async';
 import 'package:HabitShare/Constants.dart';
 import 'package:HabitShare/Realm/habit.dart';
+import 'package:HabitShare/features/friends/addfriends/current_user_provider.dart';
+import 'package:HabitShare/features/habits/EditHabit/edit_habit_form.dart';
+import 'package:HabitShare/features/habits/habitlist/sharewithfriends.dart';
+import 'package:HabitShare/features/notification/notification.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:HabitShare/features/habits/addhabit/AddHabitForm.dart';
+import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'habit_list_utils.dart';
+
 class HabitList extends StatefulWidget {
   const HabitList({Key? key});
   @override
   _HabitListState createState() => _HabitListState();
 }
+
 class _HabitListState extends State<HabitList> {
   late Realm realm;
   bool isRealmInitialized = false; // Track initialization
@@ -20,47 +27,122 @@ class _HabitListState extends State<HabitList> {
   List<HabitModel> completedHabits = [];
   List<HabitModel> activeHabits = [];
   Map<DateTime, List<HabitModel>> habits = {};
-  int _currentSegment = 0; // Added to keep track of the selected segment
+  int _currentSegment = 0;
+  int streak = 0;
+  bool isNotificationPopoverVisible = false;
+  bool hasNotifications = false;
+
   @override
   void initState() {
     super.initState();
     _initializeRealm();
   }
+
+  void togglePopover() {
+    setState(() {
+      isNotificationPopoverVisible = !isNotificationPopoverVisible;
+    });
+  }
+
+  void _refreshHabitList() {
+    setState(() {
+      // Fetch and update habits from the realm
+      final habits = realm.all<HabitModel>();
+      activeHabits = habits.where((habit) => !habit.isCompletedToday).toList();
+      completedHabits =
+          habits.where((habit) => habit.isCompletedToday).toList();
+    });
+  }
+
   Future<void> _initializeRealm() async {
     try {
-      final config = Configuration.local([HabitModel.schema]); // Customize Realm configuration here
-    realm = await Realm.open(config);
-    setState(() {
-      isRealmInitialized = true;
-    });
+      final config = Configuration.local(
+          [HabitModel.schema]); // Customize Realm configuration here
+      realm = await Realm.open(config);
+      setState(() {
+        isRealmInitialized = true;
+      });
     } catch (e) {
       print('Error initializing Realm: $e');
-    }// Trigger a rebuild after Realm is initialized
+    } // Trigger a rebuild after Realm is initialized
+  }
+
+  int calculateTotalDays(HabitModel habit) {
+    if (habit.startDate.isEmpty || habit.termDate.isEmpty) {
+      return 0; // Unable to calculate total days if start or term date is not provided
+    }
+    final DateTime startDateTime = DateTime.parse(habit.startDate);
+    final DateTime termDateTime = DateTime.parse(habit.termDate);
+    return termDateTime.difference(startDateTime).inDays + 1;
+  }
+
+  double calculateCompletionPercentage(HabitModel habit) {
+    final int totalDays = calculateTotalDays(habit);
+    if (totalDays == 0) {
+      return 0.0; // To avoid division by zero
+    }
+    return (habit.totalCompletedDays / totalDays) * 100;
   }
 
   @override
   Widget build(BuildContext context) {
     if (!isRealmInitialized) {
-      return Center(child: CircularProgressIndicator());
-    }
-    else
-    {
+      return const Center(child: CircularProgressIndicator());
+    } else {
       final habits = realm.all<HabitModel>();
-      if (activeHabits.isEmpty) {
-        activeHabits = habits.where((habit) => !habit.isCompletedToday).toList();
+      activeHabits = habits.where((habit) => !habit.isCompletedToday).toList();
+      completedHabits =
+          habits.where((habit) => habit.isCompletedToday).toList();
+      // Check and update isCompletedToday for each completed habit
+      for (var completedHabit in completedHabits) {
+        final completionDate = DateTime.parse(completedHabit.completionDate);
+        final currentDate = DateTime.now();
+        // Compare the current date with the completion date
+        if (completedHabit.frequency == 'HabitFrequency.daily') {
+          if (currentDate.isAfter(completionDate) &&
+              !isSameDay(currentDate, completionDate)) {
+            // If the current date is after completionDate and not the same day, update isCompletedToday to false
+            realm.write(() {
+              completedHabit.isCompletedToday = false;
+            });
+            setState(() {
+              activeHabits.add(completedHabit);
+            });
+          }
+        } else if (completedHabit.frequency == 'HabitFrequency.weekly') {
+          final startDate = DateTime.parse(completedHabit.startDate);
+          final termDate = DateTime.parse(completedHabit.termDate);
+          DateTime nextOccurrence = startDate.add(const Duration(days: 7));
+          while (nextOccurrence.isBefore(termDate) ||
+              isSameDay(nextOccurrence, termDate)) {
+            if (isSameDay(nextOccurrence, currentDate)) {
+              realm.write(() {
+                completedHabit.isCompletedToday = false;
+              });
+              setState(() {
+                activeHabits.add(completedHabit);
+              });
+              break;
+            }
+            nextOccurrence = nextOccurrence.add(const Duration(days: 7));
+          }
+        } else if (completedHabit.frequency == 'HabitFrequency.weekend') {
+          if (((currentDate.weekday == DateTime.sunday) ||
+                  (currentDate.weekday == DateTime.saturday)) &&
+              !isSameDay(currentDate, completionDate)) {
+            // Update isCompletedToday to false for Sunday
+            realm.write(() {
+              completedHabit.isCompletedToday = false;
+            }); // Move habit from active to completed list
+            setState(() {
+              activeHabits.add(completedHabit);
+            });
+          }
+        }
       }
+      final notificationProvider = Provider.of<NotificationProvider>(context);
+      final notifications = notificationProvider.notifications;
 
-      if (completedHabits.isEmpty) {
-        completedHabits = habits.where((habit) => habit.isCompletedToday).toList();
-      }
-      print("activeHabits  Length: ${activeHabits.length}");
-      print("Completed Habits Length: ${completedHabits.length}");
-      // Initialize completedHabits list with habits completed for the current date
-      /*setState(() {
-      completedHabits = activeHabits.where((habit) =>
-      habit.isCompletedToday).toList();
-      print("Completed Habits Length: ${completedHabits.length}");
-      });*/
       return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -71,13 +153,26 @@ class _HabitListState extends State<HabitList> {
                 backgroundImage: AssetImage('assets/profile_pic.jpg'),
                 radius: 20,
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               Text(
                 'Habit List', // Replace 'User Name' with the actual user's name
                 style: appbarTextStyle,
               ),
             ],
           ),
+          actions: <Widget>[
+            IconButton(
+                icon: Icon(
+                  Icons.notifications,
+                  color: hasNotifications ? Colors.red : null,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const NotificationList()));
+                }),
+          ],
         ),
         body: SizedBox(
           height: double.infinity,
@@ -109,14 +204,14 @@ class _HabitListState extends State<HabitList> {
                       for (var completedHabit in completedHabits) {
                         completedHabits.remove(completedHabit);
                         activeHabits.add(completedHabit);
-                        completedHabit.completionDate = null.toString();
+                        completedHabit.termDate = null.toString();
                       }
                     } else {
                       if (completedHabits.isNotEmpty) {
                         for (var completedHabit in completedHabits) {
                           completedHabits.remove(completedHabit);
                           activeHabits.add(completedHabit);
-                          completedHabit.completionDate = null.toString();
+                          completedHabit.termDate = null.toString();
                         }
                       }
                     }
@@ -180,244 +275,343 @@ class _HabitListState extends State<HabitList> {
                     height: 385, // Set the height of the first list
                     child: habits.isEmpty
                         ? Center(
-                      child: SvgPicture.asset(
-                        'assets/images/habitlistpic.svg',
-                        height: 350,
-                      ),
-                    )
+                            child: SvgPicture.asset(
+                              'assets/images/habitlistpic.svg',
+                              height: 350,
+                            ),
+                          )
                         : ListView.builder(
-                      itemCount: habits.length,
-                      itemBuilder: (context, index) {
-                        final habit = habits[index];
-                        bool shouldDisplay = false;
-                        final startDate =
-                        DateTime.parse(habit.startDate);
-                        final termDate =
-                        DateTime.parse(habit.termDate);
-                        if (habit.frequency == 'HabitFrequency.daily') {
-                          shouldDisplay = selectedDate.isAfter(startDate) &&
-                              (selectedDate.isBefore(termDate) || isSameDay(selectedDate, termDate));
-                        } else if (habit.frequency == 'HabitFrequency.weekend') {
-                          shouldDisplay = (selectedDate.weekday == DateTime.saturday ||
-                              selectedDate.weekday == DateTime.sunday) &&
-                              selectedDate.isAfter(startDate) &&
-                              (selectedDate.isBefore(termDate) || isSameDay(selectedDate, termDate));
-                        } else if (habit.frequency == 'HabitFrequency.weekly') {
-                          DateTime nextOccurrence = startDate;
-                          while (nextOccurrence.isBefore(termDate)) {
-                            if (nextOccurrence.isAfter(selectedDate)) {
-                              break;
-                            }
-                            if (isSameDay(nextOccurrence, selectedDate)) {
-                              shouldDisplay = true;
-                              break;
-                            }
-                            nextOccurrence = nextOccurrence.add(const Duration(days: 7));
-                          }
-                          shouldDisplay = shouldDisplay &&
-                              (selectedDate.isBefore(termDate) || isSameDay(selectedDate, termDate));
-                        }
-                        if (shouldDisplay) {
-                          return GestureDetector(
-                            onTap: () {
-                              _showHabitDetailsDialog(context, habit);
-                            },
-                            child: Expanded(
-                              child: Row(
-                                children: [
-                                  Transform.scale(
-                                    scale: 1.3,
-                                    child: Radio(
-                                      value: habit,
-                                      groupValue:
-                                      completedHabits.contains(habit)
-                                          ? habit
-                                          : null,
-                                      onChanged: (selectedHabit) {
-                                        showDialog(
-                                          context: context,
-                                          builder: (BuildContext
-                                          dialogContext) {
-                                            return AlertDialog(
-                                              title: const Text(
-                                                  'Confirm Habit Completion'),
-                                              content: const Text(
-                                                  'Have you completed this habit?'),
-                                              actions: <Widget>[
-                                                TextButton(
-                                                  child: const Text(
-                                                      'Cancel'),
-                                                  onPressed: () {
-                                                    Navigator.of(
-                                                        dialogContext)
-                                                        .pop(); // Close the dialog
-                                                  },
+                            itemCount: activeHabits.length,
+                            itemBuilder: (context, index) {
+                              final habit = activeHabits[index];
+                              bool shouldDisplay = false;
+                              final startDate = DateTime.parse(habit.startDate);
+                              final termDate = DateTime.parse(habit.termDate);
+                              int totalDays = calculateTotalDays(habit);
+                              double completionPercentage =
+                                  calculateCompletionPercentage(habit);
+                              if (habit.frequency == 'HabitFrequency.daily') {
+                                shouldDisplay =
+                                    selectedDate.isAfter(startDate) &&
+                                        (selectedDate.isBefore(termDate) ||
+                                            isSameDay(selectedDate, termDate));
+                              } else if (habit.frequency ==
+                                  'HabitFrequency.weekend') {
+                                shouldDisplay = (selectedDate.weekday ==
+                                            DateTime.saturday ||
+                                        selectedDate.weekday ==
+                                            DateTime.sunday) &&
+                                    selectedDate.isAfter(startDate) &&
+                                    (selectedDate.isBefore(termDate) ||
+                                        isSameDay(selectedDate, termDate));
+                              } else if (habit.frequency ==
+                                  'HabitFrequency.weekly') {
+                                DateTime nextOccurrence = startDate;
+                                while (nextOccurrence.isBefore(termDate)) {
+                                  if (nextOccurrence.isAfter(selectedDate)) {
+                                    break;
+                                  }
+                                  if (isSameDay(nextOccurrence, selectedDate)) {
+                                    shouldDisplay = true;
+                                    break;
+                                  }
+                                  nextOccurrence = nextOccurrence
+                                      .add(const Duration(days: 7));
+                                }
+                                shouldDisplay = shouldDisplay &&
+                                    (selectedDate.isBefore(termDate) ||
+                                        isSameDay(selectedDate, termDate));
+                              }
+                              if (shouldDisplay) {
+                                final String percentage =
+                                    '%: ${completionPercentage.toStringAsFixed(2)}%';
+                                return GestureDetector(
+                                  onTap: () {
+                                    showHabitDetailsDialog(context, habit);
+                                  },
+                                  child: Card(
+                                    elevation: 4.0,
+                                    color: getCardColor(habit.habitType),
+                                    margin: const EdgeInsets.symmetric(
+                                        vertical: 8.0, horizontal: 16.0),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          top: 16, right: 16, bottom: 16),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            height: 80,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.rectangle,
+                                              border: Border(
+                                                left: BorderSide(
+                                                  color: getBorderColor(
+                                                      habit.habitType),
+                                                  // Border color
+                                                  width: 5.0, // Border width
                                                 ),
-                                                TextButton(
-                                                  child: const Text('Yes'),
-                                                  onPressed: () async {
-                                                    realm.write(() {
-                                                      habit.isCompletedToday = true;
-                                                      habit.totalCompletedDays += 1;
-                                                    });
-                                                    print("habit.isCompletedToday: ${habit.isCompletedToday}");
-                                                    print("habit.totalCompletedDays: ${habit.totalCompletedDays}");
-                                                    // Move habit from active to completed list
-                                                    setState(() {
-                                                      activeHabits.remove(selectedHabit);
-                                                      completedHabits.add(selectedHabit!);
-                                                    });
-                                                    print("Active Habits Length: ${activeHabits.length}");
-                                                    print("Completed Habits Length: ${completedHabits.length}");
-                                                    // Update habit in Realm (if needed)
-                              
-                                                    Navigator.of(dialogContext).pop(); // Close the dialog
+                                              ),
+                                            ),
+                                            child: Radio(
+                                              value: habit,
+                                              groupValue: completedHabits
+                                                      .contains(habit)
+                                                  ? habit
+                                                  : null,
+                                              onChanged: (selectedHabit) {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (BuildContext
+                                                      dialogContext) {
+                                                    return AlertDialog(
+                                                      title: const Text(
+                                                          'Confirm Habit Completion'),
+                                                      content: const Text(
+                                                          'Have you completed this habit?'),
+                                                      actions: <Widget>[
+                                                        TextButton(
+                                                          child: const Text(
+                                                              'Cancel'),
+                                                          onPressed: () {
+                                                            Navigator.of(
+                                                                    dialogContext)
+                                                                .pop(); // Close the dialog
+                                                          },
+                                                        ),
+                                                        TextButton(
+                                                          child:
+                                                              const Text('Yes'),
+                                                          onPressed: () async {
+                                                            realm.write(() {
+                                                              habit.isCompletedToday =
+                                                                  true;
+                                                              habit.streak++;
+                                                              habit
+                                                                  .totalCompletedDays++;
+
+                                                              // Update completionDate with the current date
+                                                              habit.completionDate =
+                                                                  DateTime.now()
+                                                                      .toString();
+                                                              // Increment streak if applicable
+                                                              if (habit.frequency == 'HabitFrequency.daily' ||
+                                                                  habit.frequency ==
+                                                                      'HabitFrequency.weekend' ||
+                                                                  habit.frequency ==
+                                                                      'HabitFrequency.weekly') {
+                                                                // Check streak continuation
+                                                                if (isStreakContinued(
+                                                                    habit)) {
+                                                                  habit
+                                                                      .streak++;
+                                                                }
+                                                              } else {
+                                                                // For other frequencies, reset streak
+                                                                habit.streak =
+                                                                    1;
+                                                              }
+
+                                                              if (habit
+                                                                      .termDate !=
+                                                                  null) {
+                                                                // Check if termDate is available
+                                                                final DateTime
+                                                                    currentDate =
+                                                                    DateTime
+                                                                        .now();
+                                                                final DateTime
+                                                                    termDate =
+                                                                    DateTime.parse(
+                                                                        habit
+                                                                            .termDate!);
+                                                                // If the current date is before or equal to the term date, increment totalCompletedDays
+                                                                if (currentDate
+                                                                        .isBefore(
+                                                                            termDate) ||
+                                                                    currentDate
+                                                                        .isAtSameMomentAs(
+                                                                            termDate)) {
+                                                                  habit.totalCompletedDays +=
+                                                                      1;
+                                                                }
+                                                              } else {
+                                                                // If termDate is null, always increment totalCompletedDays
+                                                                habit.totalCompletedDays +=
+                                                                    1;
+                                                              }
+                                                              // Update completionDate with the current date
+                                                              habit.completionDate =
+                                                                  DateTime.now()
+                                                                      .toString();
+                                                            });
+
+                                                            // Move habit from active to completed list
+                                                            setState(() {
+                                                              activeHabits.remove(
+                                                                  selectedHabit);
+                                                              completedHabits.add(
+                                                                  selectedHabit!);
+                                                            });
+                                                            // Update habit in Realm (if needed)
+                                                            Navigator.of(
+                                                                    dialogContext)
+                                                                .pop(); // Close the dialog
+                                                          },
+                                                        ),
+                                                      ],
+                                                    );
                                                   },
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          const SizedBox(width: 5.0),
+                                          Expanded(
+                                            flex: 1,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  habit.name.toUpperCase(),
+                                                  style: TextStyle(
+                                                    fontSize: 20.0,
+                                                    color: getColorForHabitType(
+                                                        habit.habitType),
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4.0),
+                                                Text(
+                                                  habit.description,
+                                                  style: TextStyle(
+                                                    fontSize: 16.0,
+                                                    color: Colors.grey[700],
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 12.0),
+                                                Row(
+                                                  children: [
+                                                    SvgPicture.asset(
+                                                      'assets/images/streak.svg',
+                                                      height: 20,
+                                                    ),
+                                                    const SizedBox(width: 5),
+                                                    if (habit.streak >= 3)
+                                                      Text(
+                                                        habit.streak.toString(),
+                                                        style: const TextStyle(
+                                                          fontSize: 20,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    const SizedBox(width: 15),
+                                                    SvgPicture.asset(
+                                                      'assets/images/calendar.svg',
+                                                      height: 20,
+                                                    ),
+                                                    const SizedBox(width: 5),
+                                                    Text(
+                                                      habit.frequency
+                                                          .toString()
+                                                          .split('.')
+                                                          .last,
+                                                      style: const TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 15),
+                                                    Text(
+                                                      percentage,
+                                                      style: const TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ],
-                                            );
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        right: 10, top: 2),
-                                    child: Card(
-                                      color:
-                                      getCardColor(habit.habitType),
-                                      elevation: 4.0,
-                                      child: Container(
-                                        height: 95,
-                                        width: 310,
-                                        decoration: BoxDecoration(
-                                          border: Border(
-                                            left: BorderSide(
-                                              width: 4,
-                                              color: getBorderColor(
-                                                  habit.habitType),
                                             ),
                                           ),
-                                        ),
-                                        child: ListTile(
-                                          contentPadding:
-                                          const EdgeInsets.all(10.0),
-                                          title: Text(
-                                            habit.name.toUpperCase(),
-                                            style: const TextStyle(
-                                              fontSize: 15.0,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          subtitle: Column(
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                habit.description,
-                                                style: const TextStyle(
-                                                  fontSize: 13.0,
-                                                  fontWeight:
-                                                  FontWeight.bold,
-                                                ),
-                                                maxLines: 1,
-                                                overflow:
-                                                TextOverflow.ellipsis,
-                                              ),
-                                              const SizedBox(height: 8.0),
-                                              Row(
-                                                children: [
-                                                  SvgPicture.asset(
-                                                    'assets/images/streak.svg',
-                                                    height: 20,
-                                                  ),
-                                                  const SizedBox(
-                                                    width: 5,
-                                                  ),
-                                                  const Text(
-                                                    'Streak',
-                                                    style: TextStyle(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(
-                                                    width: 15,
-                                                  ),
-                                                  SvgPicture.asset(
-                                                    'assets/images/calendar.svg',
-                                                    height: 20,
-                                                  ),
-                                                  Text(
-                                                    '  ${habit.frequency.toString().split('.').last}',
-                                                    style:
-                                                    const TextStyle(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                      FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          trailing:
                                           PopupMenuButton<String>(
                                             onSelected: (value) {
                                               if (value == 'delete') {
-                                                _showDeleteConfirmationDialog(
-                                                    context, habit);
-                                              } else if (value ==
-                                                  'edit') {
+                                                showDeleteConfirmationDialog(
+                                                    context, realm, habit);
+                                              } else if (value == 'edit') {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        EditHabitForm(
+                                                      habit: habit,
+                                                      refreshHabitList:
+                                                          _refreshHabitList,
+                                                    ),
+                                                  ),
+                                                );
                                               } else if (value ==
                                                   'shareFriends') {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            const ShareWithFriends(
+                                                              selectedFriends: [],
+                                                            )));
                                               }
                                             },
-                                            itemBuilder: (BuildContext
-                                            context) =>
-                                            <PopupMenuEntry<String>>[
+                                            itemBuilder:
+                                                (BuildContext context) =>
+                                                    <PopupMenuEntry<String>>[
                                               const PopupMenuItem<String>(
                                                 value: 'edit',
                                                 child: ListTile(
-                                                  leading:
-                                                  Icon(Icons.edit),
+                                                  leading: Icon(Icons.edit),
                                                   title: Text('Edit'),
                                                 ),
                                               ),
                                               const PopupMenuItem<String>(
                                                 value: 'delete',
                                                 child: ListTile(
-                                                  leading:
-                                                  Icon(Icons.delete),
+                                                  leading: Icon(Icons.delete),
                                                   title: Text('Delete'),
                                                 ),
                                               ),
                                               const PopupMenuItem<String>(
                                                 value: 'shareFriends',
                                                 child: ListTile(
-                                                  leading:
-                                                  Icon(Icons.share),
+                                                  leading: Icon(Icons.share),
                                                   title: Text(
                                                       'Share with Friends'),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                        ),
+                                        ],
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          );
-                        } else {
-                          return const SizedBox();
-                        }
-                      },
-                    ),
+                                );
+                              } else {
+                                return const SizedBox();
+                              }
+                            },
+                          ),
                   ),
                 ),
               ),
@@ -428,66 +622,101 @@ class _HabitListState extends State<HabitList> {
                     height: 200, // Set the height of the second list
                     child: completedHabits.isEmpty
                         ? Center(
-                      child: SvgPicture.asset(
-                        'assets/images/notcompleted.svg',
-                        height: 350,
-                      ),
-                    )
-                        : ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      scrollDirection: Axis.vertical,
-                      shrinkWrap: true,
-                      itemCount: completedHabits.length,
-                      itemBuilder: (context, index) {
-                        final completedHabit = completedHabits[index];
-                        return Slidable(
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                                borderRadius:
-                                BorderRadius.circular(12)),
-                            color:
-                            getCardColor(completedHabit.habitType),
-                            borderOnForeground: true,
-                            elevation: 4.0,
-                            shadowColor: const Color(0xff1855f4),
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 17.0, vertical: 10.0),
-                            child: Padding(
-                              padding: const EdgeInsets.all(2.0),
-                              child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                                children: [
-                                  ListTile(
-                                    title: Center(
-                                      child: Text(
-                                        completedHabit.name,
-                                        textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                            fontSize: 20,
-                                            color: Colors.red,
-                                            fontWeight:
-                                            FontWeight.bold),
-                                      ),
-                                    ),
-                                    subtitle: Center(
-                                      child: Text(
-                                        completedHabit.description,
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
+                            child: SvgPicture.asset(
+                              'assets/images/notcompleted.svg',
+                              height: 350,
                             ),
+                          )
+                        : ListView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            scrollDirection: Axis.vertical,
+                            shrinkWrap: true,
+                            itemCount: completedHabits.length,
+                            itemBuilder: (context, index) {
+                              final completedHabit = completedHabits[index];
+
+                              return Card(
+                                elevation: 4.0,
+                                color: getCardColor(completedHabit.habitType),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                borderOnForeground: true,
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 17.0, vertical: 10.0),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 16, right: 16, bottom: 16),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        height: 80,
+                                        decoration: BoxDecoration(
+                                          border: Border(
+                                            left: BorderSide(
+                                              color: getBorderColor(
+                                                  completedHabit.habitType),
+                                              width: 5,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 15),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              completedHabit.name.toUpperCase(),
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                color: getColorForHabitType(
+                                                    completedHabit.habitType),
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              textAlign: TextAlign.start,
+                                            ),
+                                            const SizedBox(height: 4.0),
+                                            Text(
+                                              completedHabit.description,
+                                              style: const TextStyle(
+                                                fontSize: 15,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 4.0),
+                                            Row(
+                                              children: [
+                                                SvgPicture.asset(
+                                                  'assets/images/streak.svg',
+                                                  height: 20,
+                                                ),
+                                                const SizedBox(width: 4.0),
+                                                if (completedHabit.streak >= 3)
+                                                  Text(
+                                                    completedHabit.streak
+                                                        .toString(),
+                                                    style: const TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                              ],
+                                            )
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
                 ),
               ),
@@ -496,7 +725,7 @@ class _HabitListState extends State<HabitList> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.of(context).push(_createRoute());
+            Navigator.of(context).push(createRoute());
           },
           backgroundColor: primaryColor,
           child: const Icon(
@@ -507,13 +736,15 @@ class _HabitListState extends State<HabitList> {
       );
     }
   }
+
   @override
   void dispose() {
     realm.close();
     super.dispose();
   }
-  void _showDeleteConfirmationDialog(
-      BuildContext context, HabitModel habit) {
+
+  void showDeleteConfirmationDialog(
+      BuildContext context, Realm realm, HabitModel habit) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -530,12 +761,19 @@ class _HabitListState extends State<HabitList> {
             TextButton(
               child: const Text('Delete'),
               onPressed: () async {
-                final habitUuid = habit.habitUuid; // Assuming habit is available
-                final habitToDelete = realm.query<HabitModel>('habitUuid = $habitUuid').first;
+                final habitUuid =
+                    habit.habitUuid; // Assuming habit is available
+                final habitToDelete =
+                    realm.query<HabitModel>('habitUuid == "$habitUuid"').first;
                 if (habitToDelete != null) {
+                  print(
+                      "Habit found: ${habitToDelete.name} (${habitToDelete.habitUuid})");
                   realm.write(() {
                     // Delete the habit from Realm
                     realm.delete(habitToDelete);
+                  });
+                  setState(() {
+                    activeHabits.remove(habitToDelete);
                   });
                 }
                 Navigator.of(dialogContext).pop(); // Close the dialog
@@ -546,115 +784,40 @@ class _HabitListState extends State<HabitList> {
       },
     );
   }
-}
 
-Color getCardColor(String? habitType) {
-  if (habitType == 'Build') {
-    return const Color(0xFFD8FAD2);
-  } else if (habitType == 'Quit') {
-    return const Color(0xffffefe4);
+  bool isStreakContinued(HabitModel habit) {
+    final DateTime currentDate = DateTime.now();
+    final List<DateTime> completionDates = [];
+
+    // Get the last two completion dates
+    for (var completedHabit in completedHabits.reversed) {
+      completionDates.add(DateTime.parse(completedHabit.completionDate));
+      if (completionDates.length == 2) break;
+    }
+
+    // Check if there's a completion for the last two consecutive days
+    if (completionDates.length == 2) {
+      final DateTime lastCompletionDate = completionDates[0];
+      final DateTime secondLastCompletionDate = completionDates[1];
+
+      // If there's no completion for the past two days, reset streak to 0
+      if (currentDate.difference(lastCompletionDate).inDays > 1 ||
+          lastCompletionDate.difference(secondLastCompletionDate).inDays > 1) {
+        return false; // Streak is broken
+      }
+
+      // If the difference between the current date and the last completion date is 1 day,
+      // and the difference between the last completion date and the second last completion date is 1 day,
+      // then the streak is continued
+      if (currentDate.difference(lastCompletionDate).inDays == 1 &&
+          lastCompletionDate.difference(secondLastCompletionDate).inDays == 1) {
+        return true;
+      }
+    }
+
+    // If there's no completion for the last two consecutive days or streak is broken,
+    // return false
+    streak = 0;
+    return false;
   }
-  return Colors.blue; // Default color
-}
-
-Color getBorderColor(String? habitType) {
-  if (habitType == 'Build') {
-    return Colors.green;
-  } else if (habitType == 'Quit') {
-    return Colors.red;
-  }
-  return Colors.blue; // Default color
-}
-
-Color getColorForHabitType(String? habitType) {
-  if (habitType == 'Build') {
-    return Colors.green;
-  } else if (habitType == 'Quit') {
-    return Colors.red;
-  }
-  return Colors.black; // Default color
-}
-
-PageRouteBuilder _createRoute() {
-  const duration = Duration(seconds: 1);
-  return PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) =>
-    const AddHabitForm(),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      const begin = Offset(0.0, 1.0);
-      const end = Offset.zero;
-      const curve = Curves.easeInOut;
-      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve))
-        ..animate(animation);
-      return SlideTransition(
-        position: animation.drive(tween),
-        child: child,
-      );
-    },
-    transitionDuration: duration,
-    reverseTransitionDuration: duration, // Set the animation duration here
-  );
-}
-
-void _showHabitDetailsDialog(BuildContext context, HabitModel habit) {
-  showDialog(
-    context: context,
-    builder: (BuildContext dialogContext) {
-      return AlertDialog(
-        title: Text(
-          '${habit.name}',
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-        ),
-        content: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Habit Description:  ${habit.description}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            Text(
-              'Frequency:  ${habit.frequency.toString().split('.').last}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            Text(
-              'Time:  ${habit.time.toString().split('.').last}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            const SizedBox(
-              height: 15,
-            ), // Display habit time if available, 'N/A' otherwise
-            Text(
-              'Start Date:  ${habit.startDate}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            const SizedBox(
-              height: 15,
-            ), // Display start date if available, 'N/A' otherwise
-            Text(
-              'Term Date:  ${habit.termDate}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            const SizedBox(
-              height: 15,
-            ), // Display term date if available, 'N/A' otherwise            // Add more details like time, start date, term date, streak, etc.
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Close'),
-            onPressed: () {
-              Navigator.of(dialogContext).pop(); // Close the dialog
-            },
-          ),
-        ],
-      );
-    },
-  );
 }

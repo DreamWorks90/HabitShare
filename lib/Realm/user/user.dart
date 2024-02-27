@@ -8,4 +8,8 @@ class _UserModel {
   late final String name;
   late final String email;
   late String password;
+  late int contactNumber;
+  late bool loggedIn = true;
+  late String enteredSecurityQuestion;
+  late String enteredSecurityAnswer;
 }

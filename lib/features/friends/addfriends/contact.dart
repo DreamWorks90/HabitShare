@@ -1,26 +1,39 @@
 import 'package:HabitShare/Constants.dart';
+import 'package:HabitShare/Mongo%20DB/mongoloid.dart';
+import 'package:HabitShare/Realm/invitation.dart';
+import 'package:HabitShare/features/friends/Friends.dart';
+import 'package:HabitShare/features/friends/addfriends/current_user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:contacts_service/contacts_service.dart';
+import 'package:provider/provider.dart';
+import 'package:realm/realm.dart';
 
 class ContactPage extends StatefulWidget {
+  const ContactPage({super.key});
+
   @override
   _ContactPageState createState() => _ContactPageState();
 }
 
 class _ContactPageState extends State<ContactPage> {
+  final MongoDBService mongoDBService = MongoDBService();
   List<Contact> _contacts = [];
-  List<Contact> _selectedFriends = [];
-  TextEditingController _searchController = TextEditingController();
+  final List<Contact> _selectedFriends = [];
+  final TextEditingController _searchController = TextEditingController();
   bool _isLoading = false;
-
-  int _batchSize = 20;
+  final int _batchSize = 20;
   int _currentBatchIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _requestContactsPermission();
+    _initializeMongoDB();
+  }
+
+  void _initializeMongoDB() async {
+    await mongoDBService.initDatabase(); // Initiate database connection
   }
 
   Future<void> _requestContactsPermission() async {
@@ -41,7 +54,7 @@ class _ContactPageState extends State<ContactPage> {
       Iterable<Contact> contacts = await _loadContacts();
       _contacts = contacts.toList();
     } catch (e) {
-      // Handle error
+      print('Error loading contacts: $e');
     } finally {
       setState(() {
         _isLoading = false;
@@ -71,13 +84,7 @@ class _ContactPageState extends State<ContactPage> {
   }
 
   void _openSelectedFriendsPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            SelectedFriendsPage(selectedFriends: _selectedFriends),
-      ),
-    );
+    Navigator.pop(context, _selectedFriends);
   }
 
   void _searchContacts(String query) {
@@ -113,8 +120,17 @@ class _ContactPageState extends State<ContactPage> {
     }
   }
 
+  String? _getInviteeId(String contactNumber) {
+    final existingUser = mongoDBService.usersFromMongo.firstWhere((user) =>
+        user['contactNumber'] != null &&
+        user['contactNumber'].toString() == contactNumber);
+
+    return existingUser['_id'].toString();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final currentUserProvider = Provider.of<CurrentUserProvider>(context);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: primaryColor,
@@ -122,8 +138,64 @@ class _ContactPageState extends State<ContactPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.check),
-            onPressed: _openSelectedFriendsPage,
-          ),
+            onPressed: () async {
+              for (Contact friend in _selectedFriends) {
+                final contactNumber = friend.phones?.first.value;
+                if (contactNumber != null) {
+                  try {
+                    await mongoDBService.retrieveUsersFromMongoDB();
+                    if (mongoDBService.usersFromMongo.isNotEmpty) {
+                      bool contactExists = mongoDBService.usersFromMongo.any(
+                          (user) =>
+                              user['contactNumber'] != null &&
+                              user['contactNumber'].toString() ==
+                                  contactNumber);
+                      final inviterId = currentUserProvider.currentUserId;
+                      final inviterName = currentUserProvider.currentUserName;
+                      if (inviterId != null) {
+                        String? inviteeId;
+                        if (contactExists) {
+                          inviteeId = _getInviteeId(contactNumber);
+                        }
+                        final config =
+                            Configuration.local([InvitationModel.schema]);
+                        final realm = Realm(config);
+                        realm.write(() {
+                          InvitationModel newInvitation = InvitationModel(
+                            ObjectId(),
+                            inviterId,
+                            inviteeId ?? '', // Ensure inviteeId is not null
+                            contactNumber,
+                          );
+                          realm.add(newInvitation);
+                        });
+                        realm.close();
+                        await pushInvitationToMongoDB(mongoDBService.db);
+                        if (contactExists) {
+                          print(
+                              'Invitation added: $inviterId,$inviteeId,$contactNumber');
+                          final notification = NotificationModel(
+                            title: 'New Friend Request',
+                            description:
+                                'You have a new friend request from $inviterName.',
+                          );
+                          Provider.of<NotificationProvider>(context,
+                                  listen: false)
+                              .sendNotification(notification);
+                        } else {
+                          print(
+                              'Invitation added for non-existing user: $inviterId,null,$contactNumber');
+                        }
+                      }
+                    }
+                  } catch (error) {
+                    print('Error checking contact number: $error');
+                  }
+                }
+              }
+              _openSelectedFriendsPage();
+            },
+          )
         ],
       ),
       body: Column(
@@ -145,6 +217,12 @@ class _ContactPageState extends State<ContactPage> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    mongoDBService.closeDatabase(); // Close the database connection
+    super.dispose();
   }
 
   Widget _buildContactsList() {
@@ -196,7 +274,7 @@ class _ContactPageState extends State<ContactPage> {
 class SelectedFriendsPage extends StatelessWidget {
   final List<Contact> selectedFriends;
 
-  SelectedFriendsPage({required this.selectedFriends});
+  const SelectedFriendsPage({super.key, required this.selectedFriends});
 
   @override
   Widget build(BuildContext context) {
