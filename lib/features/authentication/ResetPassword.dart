@@ -14,11 +14,13 @@ class ResetPassword extends StatefulWidget {
 class _ResetPasswordState extends State<ResetPassword> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
+
   final TextEditingController _securityQuestionController =
       TextEditingController();
   final TextEditingController _securityAnswerController =
       TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
+
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
@@ -30,16 +32,13 @@ class _ResetPasswordState extends State<ResetPassword> {
     }
     return null;
   }
-
   void _resetPassword() async {
     final String enteredEmail = _emailController.text;
     final String securityAnswer = _securityAnswerController.text;
     final String newPassword = _newPasswordController.text;
-
     final config = Configuration.local([UserModel.schema]);
     final realm = Realm(config);
     final storedUser = realm.query<UserModel>('email == "$enteredEmail"');
-
     if (storedUser.isNotEmpty) {
       // Fetch and display the security question
       _securityQuestionController.text = storedUser[0].enteredSecurityQuestion;
@@ -72,7 +71,6 @@ class _ResetPasswordState extends State<ResetPassword> {
       );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,6 +116,7 @@ class _ResetPasswordState extends State<ResetPassword> {
                     ),
                   ),
                   validator: _validateEmail,
+
                   onChanged: (value) {
                     _securityQuestionController.clear();
                     _securityAnswerController.clear();

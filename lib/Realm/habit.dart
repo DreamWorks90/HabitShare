@@ -18,4 +18,5 @@ class _HabitModel {
   late String completionDate;
   late bool isCompletedToday;
   late int totalCompletedDays;
+
 }
