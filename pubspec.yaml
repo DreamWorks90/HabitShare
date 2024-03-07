@@ -56,6 +56,10 @@ dependencies:
   flutter_share: ^2.0.0
   http: ^1.1.0
   image_picker: ^1.0.4
+  firebase_core: ^2.26.0
+  firebase_auth: ^4.17.7
+  firebase_analytics: ^10.8.8
+  cloud_firestore: ^4.15.7
 
 
 
@@ -71,12 +75,13 @@ dependencies:
   contacts_service: ^0.6.3
   permission_handler: ^11.0.1
   flutter_native_contact_picker: ^0.0.5
-  google_sign_in: ^6.1.6
+  google_sign_in: ^6.2.1
   flutter_svg: ^2.0.9
   google_fonts: ^6.1.0
   curved_navigation_bar: ^1.0.3
   tuple: ^2.0.2
   provider: ^6.1.1
+
 
 
 

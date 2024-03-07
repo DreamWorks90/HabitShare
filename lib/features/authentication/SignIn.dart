@@ -1,8 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:HabitShare/features/Authentication/SignUp.dart';
 import 'package:HabitShare/Constants.dart';
-import 'package:HabitShare/db/services/UserService.dart';
 import 'package:HabitShare/features/Authentication/ResetPassword.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_svg/svg.dart';
@@ -21,7 +22,7 @@ class _SignInState extends State<SignIn> {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
@@ -170,6 +171,7 @@ class _SignInState extends State<SignIn> {
                         GestureDetector(
                           onTap: () {
                             // Handle Google sign-in logic here
+                            _signInWithGoogle();
                           },
                           child: SvgPicture.asset(
                             'assets/images/google.svg',
@@ -237,28 +239,63 @@ class _SignInState extends State<SignIn> {
       navigatorKey.currentState?.pushReplacement(
         MaterialPageRoute(builder: (context) => const HabitStatus()),
       );
-    } else {
-      showSignInFailedDialog();
     }
   }
 
-  void showSignInFailedDialog() async {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Sign-In Failed'),
-          content: const Text('Invalid email or password.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
+  _signInWithGoogle() async {
+    final GoogleSignIn _googleSignIn = GoogleSignIn();
+    try {
+      final GoogleSignInAccount? googleSignInAccount =
+          await _googleSignIn.signIn();
+      if (googleSignInAccount != null) {
+        final GoogleSignInAuthentication googleSignInAuthentication =
+            await googleSignInAccount.authentication;
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          idToken: googleSignInAuthentication.idToken,
+          accessToken: googleSignInAuthentication.accessToken,
         );
-      },
-    );
+        final UserCredential userCredential =
+            await _firebaseAuth.signInWithCredential(credential);
+        final User? user = userCredential.user;
+        if (user != null) {
+          print("User is successfully signed in");
+
+          // Save user details in Firestore
+          await saveUserDetailsInFirestore(user);
+
+          // Navigate to feed page
+          Navigator.of(context as BuildContext).pushReplacement(
+            MaterialPageRoute(builder: (context) => const HabitStatus()),
+          );
+        }
+      }
+    } catch (e) {
+      print("Some error occurred during Google sign-in: $e");
+    }
+  }
+
+  Future<String?> saveUserDetailsInFirestore(User user) async {
+    try {
+      // Access Firestore instance
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+      // Check if the user already exists in Firestore
+      final DocumentSnapshot userDoc =
+          await firestore.collection('users').doc(user.uid).get();
+
+      // If the user doesn't exist, add user details to Firestore
+      if (!userDoc.exists) {
+        await firestore.collection('users').doc(user.uid).set({
+          'displayName': user.displayName,
+          'email': user.email,
+          // Add more user details as needed
+        });
+      }
+      // Return the displayName
+      return user.displayName;
+    } catch (e) {
+      print("Error saving user details in Firestore: $e");
+      return null;
+    }
   }
 }

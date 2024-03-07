@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "318897085152",
+    "project_id": "habitshare-11",
+    "storage_bucket": "habitshare-11.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:318897085152:android:4f81b94e706e14911a0e85",
+        "android_client_info": {
+          "package_name": "com.dreamworks.habitshare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDr6feO4K78mhMI_MyhHw6URVyX6SLC_gk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
