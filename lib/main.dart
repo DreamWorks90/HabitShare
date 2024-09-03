@@ -2,6 +2,7 @@ import 'package:HabitShare/features/splash/SplashPage.dart';
 import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:HabitShare/redux/AppState.dart';
 
@@ -17,6 +18,7 @@ void main() async {
       projectId: "habitshare-11.appspot.com",
     ),
   );
+
   //FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
   print("firebase after");
   runApp(const MyApp());

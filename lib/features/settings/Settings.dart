@@ -1,5 +1,7 @@
 import 'package:HabitShare/features/settings/profile.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
@@ -107,50 +109,79 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _navigateToPage(String settingOption) {
+  void _navigateToPage(String settingOption) async {
     // Handle navigation based on the selected setting option
     switch (settingOption) {
       case 'Profile':
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const ProfilePage()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfilePage()),
+        );
         break;
       case 'Privacy':
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const PrivacyPage()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const PrivacyPage()),
+        );
         break;
       case 'Feedback':
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const FeedbackPage()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const FeedbackPage()),
+        );
         break;
       case 'Notification':
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const NotificationPage()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const NotificationPage()),
+        );
         break;
       case 'Rate Us':
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const RateUsPage()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const RateUsPage()),
+        );
         break;
       case 'Share App':
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const ShareAppPage()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ShareAppPage()),
+        );
         break;
       case 'Review and Support':
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const ReviewSupportPage()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ReviewSupportPage()),
+        );
         break;
       case 'Contact Us':
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const ContactUsPage()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ContactUsPage()),
+        );
         break;
       case 'Log Out':
-        // Implement log out functionality
+        // Implement logout functionality
+        try {
+          // Sign out from Firebase
+          await FirebaseAuth.instance.signOut();
+
+          // Sign out from Google
+          final GoogleSignIn googleSignIn = GoogleSignIn();
+          await googleSignIn.signOut();
+
+          // Navigate to the login screen or any other appropriate screen after logout
+          Navigator.of(context).pop();
+        } catch (e) {
+          print('Error signing out: $e');
+        }
         break;
       default:
         // Handle default case or navigate to a generic settings page
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const GenericSettingsPage()));
+          context,
+          MaterialPageRoute(builder: (context) => const GenericSettingsPage()),
+        );
     }
   }
 

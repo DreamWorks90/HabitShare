@@ -9,6 +9,7 @@ import 'package:HabitShare/features/tabs/HabitShareTabs.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -273,6 +274,8 @@ class _SignInState extends State<SignIn> {
       print("Some error occurred during Google sign-in: $e");
     }
   }
+
+  // Function to sign in with Facebook
 
   Future<String?> saveUserDetailsInFirestore(User user) async {
     try {

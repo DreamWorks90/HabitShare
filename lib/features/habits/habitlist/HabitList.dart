@@ -5,14 +5,10 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:HabitShare/redux/AppState.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:redux/redux.dart';
 import 'package:HabitShare/features/habits/addhabit/AddHabitForm.dart';
 import 'package:HabitShare/features/habits/models/HabitModel.dart';
 import 'package:table_calendar/table_calendar.dart';
-
-import '../../../userprovider.dart';
 
 class HabitList extends StatefulWidget {
   const HabitList({Key? key});
@@ -26,11 +22,28 @@ class _HabitListState extends State<HabitList> {
   List<HabitModel> completedHabits = [];
   List<HabitModel> activeHabits = [];
   List<HabitModel> completedHabitsForToday = [];
+  int _currentSegment = 0;
+  int streak = 0;
+  bool isNotificationPopoverVisible = false;
+  bool hasNotifications = false;
 
   Map<DateTime, List<HabitModel>> habits = {};
   bool isVisible = true;
 
-  int _currentSegment = 0; // Added to keep track of the selected segment
+  void togglePopover() {
+    setState(() {
+      isNotificationPopoverVisible = !isNotificationPopoverVisible;
+    });
+  }
+
+  int calculateTotalDays(HabitModel habit) {
+    if (habit.startDate.isEmpty || habit.termDate.isEmpty) {
+      return 0; // Unable to calculate total days if start or term date is not provided
+    }
+    final DateTime startDateTime = DateTime.parse(habit.startDate);
+    final DateTime termDateTime = DateTime.parse(habit.termDate);
+    return termDateTime.difference(startDateTime).inDays + 1;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,11 +64,11 @@ class _HabitListState extends State<HabitList> {
             backgroundColor: primaryColor,
             title: const Row(
               children: [
-                CircleAvatar(
-                  backgroundImage: AssetImage('assets/profile_pic.jpg'),
-                  // Replace 'assets/profile_pic.jpg' with the path to the user's profile picture
-                  radius: 20,
-                ),
+                ////CircleAvatar(
+                //backgroundImage: AssetImage('assets/profile_pic.jpg'),
+                // Replace 'assets/profile_pic.jpg' with the path to the user's profile picture
+                // radius: 20,
+                //   ),
                 const SizedBox(width: 10),
                 // Add user name here (you can replace the placeholder with your logic)
                 Text(
@@ -201,36 +214,24 @@ class _HabitListState extends State<HabitList> {
 
                                 bool isVisible = false;
                                 if (habit.frequency == HabitFrequency.daily) {
-                                  if (habit.termDate != null) {
-                                    final startDate =
-                                        DateTime.parse(habit.startDate);
-                                    final termDate =
-                                        DateTime.parse(habit.termDate);
-                                    isVisible =
-                                        selectedDate.isAfter(startDate) &&
-                                            selectedDate.isBefore(termDate);
-                                  } else {
-                                    isVisible =
-                                        true; // Display daily habits without start and term date restriction
-                                  }
+                                  final startDate =
+                                      DateTime.parse(habit.startDate);
+                                  final termDate =
+                                      DateTime.parse(habit.termDate);
+                                  isVisible = selectedDate.isAfter(startDate) &&
+                                      selectedDate.isBefore(termDate);
                                 } else if (habit.frequency ==
                                         HabitFrequency.weekend &&
                                     (selectedDate.weekday ==
                                             DateTime.saturday ||
                                         selectedDate.weekday ==
                                             DateTime.sunday)) {
-                                  if (habit.termDate != null) {
-                                    final startDate =
-                                        DateTime.parse(habit.startDate);
-                                    final termDate =
-                                        DateTime.parse(habit.termDate);
-                                    isVisible =
-                                        selectedDate.isAfter(startDate) &&
-                                            selectedDate.isBefore(termDate);
-                                  } else {
-                                    isVisible =
-                                        true; // Display weekend habits without start and term date restriction
-                                  }
+                                  final startDate =
+                                      DateTime.parse(habit.startDate);
+                                  final termDate =
+                                      DateTime.parse(habit.termDate);
+                                  isVisible = selectedDate.isAfter(startDate) &&
+                                      selectedDate.isBefore(termDate);
                                 } else if (habit.frequency ==
                                     HabitFrequency.weekly) {
                                   final startDate =
@@ -383,7 +384,7 @@ class _HabitListState extends State<HabitList> {
                                                           'assets/images/streak.svg',
                                                           height: 20,
                                                         ),
-                                                        SizedBox(
+                                                        const SizedBox(
                                                           width: 5,
                                                         ),
                                                         const Text(
@@ -394,7 +395,7 @@ class _HabitListState extends State<HabitList> {
                                                                 FontWeight.bold,
                                                           ),
                                                         ),
-                                                        SizedBox(
+                                                        const SizedBox(
                                                           width: 15,
                                                         ),
                                                         SvgPicture.asset(
@@ -564,9 +565,9 @@ class _HabitListState extends State<HabitList> {
 
   Color getCardColor(String? habitType) {
     if (habitType == 'Build') {
-      return Color(0xFFD8FAD2);
+      return const Color(0xFFD8FAD2);
     } else if (habitType == 'Quit') {
-      return Color(0xffffefe4);
+      return const Color(0xffffefe4);
     }
     return Colors.blue; // Default color
   }
@@ -676,14 +677,14 @@ void _showHabitDetailsDialog(BuildContext context, HabitModel habit) {
               height: 15,
             ), // Display habit time if available, 'N/A' otherwise
             Text(
-              'Start Date:  ${habit.startDate ?? 'N/A'}',
+              'Start Date:  ${habit.startDate}',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             const SizedBox(
               height: 15,
             ), // Display start date if available, 'N/A' otherwise
             Text(
-              'Term Date:  ${habit.termDate ?? 'N/A'}',
+              'Term Date:  ${habit.termDate}',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             const SizedBox(
